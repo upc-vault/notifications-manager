@@ -1,0 +1,23 @@
+#%RAML 1.0
+title: Notifications Manager
+version: v1
+baseUri: https://127.0.0.1
+mediaType:  application/json
+types:
+  Notification: !include types/notification.raml
+resourceTypes:
+  collection: !include types/collection.raml
+/send-notifcation:
+  type: collection
+  post:
+    body:
+      type: Notification
+    responses:
+      201:
+        headers:
+          Location:
+            example: /notification/d95be94c-37b9-4cad-bf3d-56123fb116c2
+        body: |
+          {
+            "notification": "d95be94c-37b9-4cad-bf3d-56123fb116c2"
+          }
