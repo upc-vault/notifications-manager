@@ -34,7 +34,15 @@
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.value">[&#xd;
 	{&#xd;
-		&#xd;
+		&quot;sender&quot;: {&#xd;
+			&quot;id&quot;: &quot;&quot;&#xd;
+		},&#xd;
+		&quot;receiver&quot;: {&#xd;
+			&quot;id&quot;: &quot;&quot;&#xd;
+		},&#xd;
+		&quot;channelCode&quot;: &quot;&quot;,&#xd;
+		&quot;notificationType&quot;: &quot;&quot;,&#xd;
+		&quot;sendingTime&quot;: &quot;2032-04-23T10:20:30.400+02:30&quot;&#xd;
 	}&#xd;
 ]&#xd;
 </stringProp>

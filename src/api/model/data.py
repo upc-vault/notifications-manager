@@ -2,5 +2,5 @@ from pydantic import BaseModel
 
 
 class Data(BaseModel):
-    key: str = None
-    value: str = None
+    key: str
+    value: str

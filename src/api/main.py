@@ -12,7 +12,6 @@ scope = "notifications"
 version = "v0"
 api = "send-notifications"
 
-
 @app.route(f'/{scope}/{version}/{api}', methods=['POST'])
 def sendNotifications():
     if request.get_json() is None:
@@ -22,10 +21,9 @@ def sendNotifications():
     notifications = notifications_adapter.validate_python(request.get_json())
 
     for notification in notifications:
-        notification.id = str(uuid.uuid4())
-        print(notification)
+        notification_id = str(uuid.uuid4())
+        notification.id = str(notification_id)
     return 'hello'
-
 
 if __name__ == '__main__':
     app.run(debug=True)
