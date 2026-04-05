@@ -1,0 +1,33 @@
+[
+  {
+    "sender": {
+      "id": "system-001"
+    },
+    "receiver": {
+      "id": "user-12345"
+    },
+    "channelCode": "email",
+    "notificationType": "promotional",
+    "sendingTime": "2026-04-04T14:30:00Z",
+    "data": [
+      {
+        "key": "user_name",
+        "value": "John Doe"
+      },
+      {
+        "key": "offer_percentage",
+        "value": "25"
+      },
+      {
+        "key": "product_name",
+        "value": "Premium Subscription"
+      }
+    ],
+    "attachments": [
+      {
+        "id": "att-001",
+        "name": "offer_details.pdf"
+      }
+    ]
+  }
+]
