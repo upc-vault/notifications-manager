@@ -42,20 +42,25 @@ class PriorityQueueService:
             redis_port: Redis server port
             redis_db: Redis database number
         """
+        self._fallback_queue = []
+        self.redis_client = None
+        
         try:
-            self.redis_client = redis.Redis(
+            client = redis.Redis(
                 host=redis_host,
                 port=redis_port,
                 db=redis_db,
-                decode_responses=True
+                decode_responses=True,
+                socket_connect_timeout=0.1,
+                socket_timeout=0.1,
+                retry_on_timeout=False
             )
             # Test connection
-            self.redis_client.ping()
+            client.ping()
+            self.redis_client = client
             print(f"✓ Connected to Redis at {redis_host}:{redis_port}")
-        except redis.ConnectionError:
+        except Exception as e:
             print(f"⚠ Warning: Could not connect to Redis. Queue will use in-memory fallback.")
-            self.redis_client = None
-            self._fallback_queue = []
     
     def enqueue(self, notification: QueuedNotification) -> str:
         """

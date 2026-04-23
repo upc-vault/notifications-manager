@@ -51,19 +51,25 @@ class WebPushService:
     
     def _connect_redis(self):
         """Connect to Redis for storing subscriptions"""
+        self.redis_client = None
+        self._subscriptions = {}  # Fallback in-memory storage
+        self._notification_metadata = {}  # Fallback for notification metadata
+        
         try:
-            self.redis_client = redis.Redis(
+            client = redis.Redis(
                 host=self.redis_config.get('host', 'localhost'),
                 port=self.redis_config.get('port', 6379),
                 db=self.redis_config.get('db', 0),
-                decode_responses=True
+                decode_responses=True,
+                socket_connect_timeout=0.1,
+                socket_timeout=0.1,
+                retry_on_timeout=False
             )
-            self.redis_client.ping()
+            client.ping()
+            self.redis_client = client
             logger.info("WebPush Service connected to Redis")
-        except redis.ConnectionError as e:
+        except Exception as e:
             logger.warning(f"Could not connect to Redis: {e}. Using in-memory storage.")
-            self.redis_client = None
-            self._subscriptions = {}  # Fallback in-memory storage
     
     def save_subscription(self, user_id: str, subscription: Dict[str, Any]) -> bool:
         """
@@ -88,6 +94,8 @@ class WebPushService:
                 self.redis_client.sadd("webpush:all_subscriptions", user_id)
             else:
                 # Fallback to in-memory
+                if not hasattr(self, '_subscriptions'):
+                    self._subscriptions = {}
                 self._subscriptions[user_id] = subscription
             
             logger.info(f"Saved subscription for user {user_id}")
@@ -114,6 +122,8 @@ class WebPushService:
                 if subscription_json:
                     return json.loads(subscription_json)
             else:
+                if not hasattr(self, '_subscriptions'):
+                    self._subscriptions = {}
                 return self._subscriptions.get(user_id)
             
             return None
@@ -138,6 +148,8 @@ class WebPushService:
                 self.redis_client.delete(key)
                 self.redis_client.srem("webpush:all_subscriptions", user_id)
             else:
+                if not hasattr(self, '_subscriptions'):
+                    self._subscriptions = {}
                 self._subscriptions.pop(user_id, None)
             
             logger.info(f"Removed subscription for user {user_id}")
@@ -228,10 +240,19 @@ class WebPushService:
             
             logger.info(f"Sent web push notification to user {user_id}")
             
+            # Store notification metadata for click tracking
+            self._store_notification_metadata(notification_id or tag or f'notification-{user_id}', {
+                'user_id': user_id,
+                'template': data.get('template') if data else None,
+                'channel': 'webpush',
+                'timestamp': datetime.now().isoformat()
+            })
+            
             return {
                 'success': True,
                 'status_code': response.status_code,
-                'user_id': user_id
+                'user_id': user_id,
+                'notification_id': notification_id or tag or f'notification-{user_id}'
             }
         
         except WebPushException as e:
@@ -265,10 +286,45 @@ class WebPushService:
             if self.redis_client:
                 return list(self.redis_client.smembers("webpush:all_subscriptions"))
             else:
+                if not hasattr(self, '_subscriptions'):
+                    self._subscriptions = {}
                 return list(self._subscriptions.keys())
         except Exception as e:
             logger.error(f"Failed to get all subscriptions: {e}")
             return []
+    
+    def _store_notification_metadata(self, notification_id: str, metadata: Dict[str, Any]):
+        """Store notification metadata for later feedback"""
+        try:
+            metadata_json = json.dumps(metadata)
+            if self.redis_client:
+                key = f"webpush:notification:{notification_id}"
+                # Store for 24 hours
+                self.redis_client.setex(key, 24 * 60 * 60, metadata_json)
+            else:
+                if not hasattr(self, '_notification_metadata'):
+                    self._notification_metadata = {}
+                self._notification_metadata[notification_id] = metadata
+            logger.debug(f"Stored metadata for notification {notification_id}")
+        except Exception as e:
+            logger.error(f"Failed to store notification metadata: {e}")
+    
+    def get_notification_metadata(self, notification_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve notification metadata"""
+        try:
+            if self.redis_client:
+                key = f"webpush:notification:{notification_id}"
+                metadata_json = self.redis_client.get(key)
+                if metadata_json:
+                    return json.loads(metadata_json)
+            else:
+                if not hasattr(self, '_notification_metadata'):
+                    self._notification_metadata = {}
+                return self._notification_metadata.get(notification_id)
+            return None
+        except Exception as e:
+            logger.error(f"Failed to get notification metadata: {e}")
+            return None
     
     def get_stats(self) -> Dict[str, Any]:
         """Get subscription statistics"""

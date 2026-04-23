@@ -20,6 +20,7 @@ from ..services.priority_queue_service import (
     create_queued_notification
 )
 from ..services.webpush_service import WebPushService
+from ..services.analytics_db import AnalyticsDatabase
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +69,10 @@ def create_app():
         print(f"⚠ Warning: {e}")
         print("  Run 'python scripts/train_integrated.py' first")
         decision_service = None
+    
+    # Initialize SQLite analytics database
+    analytics_db = AnalyticsDatabase(db_path="data/analytics.db")
+    print("✓ Analytics Database initialized")
     
     queue_service = PriorityQueueService(
         redis_host=app.config['REDIS_HOST'],
@@ -266,9 +271,35 @@ def create_app():
         
         stats = decision_service.get_model_statistics()
         
+        # Transform data to match dashboard expectations
+        template_stats = {}
+        for template, data in stats['template_statistics'].items():
+            template_stats[template] = {
+                'count': data.get('total_pulls', 0),  # Dashboard expects 'count'
+                'total_pulls': data.get('total_pulls', 0),
+                'success_count': data.get('success_count', 0),
+                'failure_count': data.get('failure_count', 0),
+                'success_rate': data.get('success_rate', 0.0),
+                'avg_engagement': data.get('avg_engagement', 0.0),
+                'ucb_score': data.get('ucb_score', 0)
+            }
+        
+        channel_stats = {}
+        for channel, data in stats['channel_statistics'].items():
+            channel_stats[channel] = {
+                'total_selections': data.get('selections', 0),  # Dashboard expects 'total_selections'
+                'selections': data.get('selections', 0),
+                'selection_rate': data.get('selection_rate', 0.0),
+                'success_rate': data.get('success_rate', 0.0),
+                'availability': data.get('availability', 1.0),
+                'cost': data.get('cost', 0.0),
+                'latency': data.get('latency', 0.0),
+                'user_preference': data.get('user_preference', 1.0)
+            }
+        
         return jsonify({
-            'template_statistics': stats['template_statistics'],
-            'channel_statistics': stats['channel_statistics']
+            'template_statistics': template_stats,
+            'channel_statistics': channel_stats
         }), 200
     
     # Clear queue endpoint (for testing)
@@ -286,6 +317,135 @@ def create_app():
         """Serve the web push demo page"""
         static_folder = app.static_folder
         return send_from_directory(static_folder, 'index.html')
+    
+    @app.route('/dashboard')
+    def serve_dashboard():
+        """Serve the ML models dashboard"""
+        static_folder = app.static_folder
+        return send_from_directory(static_folder, 'dashboard.html')
+    
+    @app.route('/api/v1/analytics/summary', methods=['GET'])
+    def get_analytics_summary():
+        """Get analytics summary from SQLite database"""
+        try:
+            days = request.args.get('days', default=7, type=int)
+            summary = analytics_db.get_performance_summary(days=days)
+            return jsonify(summary), 200
+        except Exception as e:
+            logger.error(f"Error getting analytics summary: {e}")
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/v1/analytics/notifications', methods=['GET'])
+    def get_recent_notifications():
+        """Get recent notifications with click status"""
+        try:
+            limit = request.args.get('limit', default=50, type=int)
+            user_id = request.args.get('user_id', type=str)
+            notifications = analytics_db.get_recent_notifications(
+                limit=limit,
+                user_id=user_id
+            )
+            return jsonify({'notifications': notifications}), 200
+        except Exception as e:
+            logger.error(f"Error getting recent notifications: {e}")
+            return jsonify({'error': str(e)}), 500
+    
+    # ============= Template Management Endpoints =============
+    
+    @app.route('/templates')
+    def serve_templates_page():
+        """Serve the template management page"""
+        static_folder = app.static_folder
+        return send_from_directory(static_folder, 'templates.html')
+    
+    @app.route('/api/v1/templates', methods=['GET'])
+    def get_templates():
+        """Get all templates"""
+        try:
+            templates = analytics_db.get_all_templates()
+            return jsonify(templates), 200
+        except Exception as e:
+            logger.error(f"Error getting templates: {e}")
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/v1/templates', methods=['POST'])
+    def create_template_endpoint():
+        """Create a new template"""
+        try:
+            data = request.get_json()
+            
+            import uuid
+            template_id = str(uuid.uuid4())
+            
+            success = analytics_db.create_template(
+                template_id=template_id,
+                name=data.get('name'),
+                template_type=data.get('type'),
+                channels=data.get('channels', []),
+                title=data.get('title'),
+                body=data.get('body'),
+                email_html=data.get('email_html'),
+                variables=data.get('variables', [])
+            )
+            
+            if success:
+                return jsonify({'id': template_id, 'message': 'Template created'}), 201
+            else:
+                return jsonify({'error': 'Failed to create template'}), 500
+        except Exception as e:
+            logger.error(f"Error creating template: {e}")
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/v1/templates/<template_id>', methods=['GET'])
+    def get_template_endpoint(template_id):
+        """Get a specific template"""
+        try:
+            template = analytics_db.get_template(template_id)
+            if template:
+                return jsonify(template), 200
+            else:
+                return jsonify({'error': 'Template not found'}), 404
+        except Exception as e:
+            logger.error(f"Error getting template: {e}")
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/v1/templates/<template_id>', methods=['PUT'])
+    def update_template_endpoint(template_id):
+        """Update a template"""
+        try:
+            data = request.get_json()
+            
+            success = analytics_db.update_template(
+                template_id=template_id,
+                name=data.get('name'),
+                template_type=data.get('type'),
+                channels=data.get('channels', []),
+                title=data.get('title'),
+                body=data.get('body'),
+                email_html=data.get('email_html'),
+                variables=data.get('variables', [])
+            )
+            
+            if success:
+                return jsonify({'message': 'Template updated'}), 200
+            else:
+                return jsonify({'error': 'Failed to update template'}), 500
+        except Exception as e:
+            logger.error(f"Error updating template: {e}")
+            return jsonify({'error': str(e)}), 500
+    
+    @app.route('/api/v1/templates/<template_id>', methods=['DELETE'])
+    def delete_template_endpoint(template_id):
+        """Delete a template"""
+        try:
+            success = analytics_db.delete_template(template_id)
+            if success:
+                return jsonify({'message': 'Template deleted'}), 200
+            else:
+                return jsonify({'error': 'Failed to delete template'}), 500
+        except Exception as e:
+            logger.error(f"Error deleting template: {e}")
+            return jsonify({'error': str(e)}), 500
     
     @app.route('/sw.js')
     def serve_sw():
@@ -378,6 +538,17 @@ def create_app():
                 notification_id=notification_id
             )
             
+            # Log to SQLite analytics
+            if result.get('success'):
+                analytics_db.log_notification(
+                    notification_id=notification_id,
+                    user_id=user_id,
+                    template='friendly',
+                    channel='webpush',
+                    title='🏦 Bank Notification Test',
+                    body='This is a test notification from your bank. Click to view details.'
+                )
+            
             if result['success']:
                 return jsonify({
                     'status': 'sent',
@@ -394,6 +565,73 @@ def create_app():
         except Exception as e:
             return jsonify({'error': str(e)}), 500
     
+    @app.route('/api/v1/webpush/send-with-template', methods=['POST'])
+    def send_webpush_with_template():
+        """Send web push notification using a template"""
+        try:
+            data = request.get_json()
+            user_id = data.get('user_id')
+            template_id = data.get('template_id')
+            variables = data.get('variables', {})
+            
+            if not user_id or not template_id:
+                return jsonify({'error': 'user_id and template_id required'}), 400
+            
+            # Get template from database
+            template = analytics_db.get_template(template_id)
+            if not template:
+                return jsonify({'error': 'Template not found'}), 404
+            
+            # Check if template supports webpush
+            if 'webpush' not in template['channels']:
+                return jsonify({'error': 'Template does not support webpush channel'}), 400
+            
+            # Render template with variables
+            title = template['title']
+            body = template['body']
+            
+            # Replace variables in title and body
+            for var_name, var_value in variables.items():
+                title = title.replace(f'{{{var_name}}}', str(var_value))
+                body = body.replace(f'{{{var_name}}}', str(var_value))
+            
+            # Generate notification ID
+            import uuid
+            notification_id = str(uuid.uuid4())
+            
+            # Send notification
+            result = webpush_service.send_notification(
+                user_id=user_id,
+                title=title,
+                body=body,
+                data={
+                    'url': '/',
+                    'template_id': template_id,
+                    'template_type': template['type'],
+                    'template': template['type'].lower()
+                },
+                tag=f'template-{template_id}',
+                notification_id=notification_id
+            )
+            
+            # Log to SQLite analytics
+            if result.get('success'):
+                analytics_db.log_notification(
+                    notification_id=notification_id,
+                    user_id=user_id,
+                    template=template['type'].lower(),
+                    channel='webpush',
+                    title=title,
+                    body=body,
+                    metadata={'template_id': template_id, 'template_name': template['name']}
+                )
+            
+            return jsonify(result), 200 if result.get('success') else 500
+        
+        except Exception as e:
+            logger.error(f"Error sending template notification: {e}")
+            return jsonify({'error': str(e)}), 500
+    
     @app.route('/api/v1/webpush/stats', methods=['GET'])
     def get_webpush_stats():
         """Get web push subscription statistics"""
@@ -408,21 +646,69 @@ def create_app():
             notification_id = data.get('notification_id')
             clicked = data.get('clicked', True)
             
-            # Log the click for analytics
-            logger.info(f"Notification clicked: {notification_id}")
+            if not notification_id:
+                return jsonify({'error': 'notification_id required'}), 400
             
-            # Here you would normally:
-            # 1. Look up the notification details (template, channel, user_id)
-            # 2. Send feedback to the ML models via /api/v1/feedback
-            # For now, we'll just acknowledge the click
+            # Get notification metadata (template, channel, user_id)
+            metadata = webpush_service.get_notification_metadata(notification_id)
             
-            return jsonify({
-                'status': 'tracked',
-                'notification_id': notification_id,
-                'engagement': 1.0 if clicked else 0.0
-            }), 200
+            if not metadata:
+                logger.warning(f"No metadata found for notification {notification_id}")
+                return jsonify({
+                    'status': 'tracked',
+                    'notification_id': notification_id,
+                    'warning': 'Metadata not found, feedback not sent to models'
+                }), 200
+            
+            template = metadata.get('template')
+            channel = metadata.get('channel', 'webpush')
+            
+            if not template:
+                logger.warning(f"No template in metadata for notification {notification_id}")
+                return jsonify({
+                    'status': 'tracked',
+                    'notification_id': notification_id,
+                    'warning': 'Template not found, feedback not sent to models'
+                }), 200
+            
+            # Send feedback to ML models (Redis hot data)
+            if decision_service:
+                engagement = 1.0 if clicked else 0.0
+                success = clicked  # Click = success
+                
+                decision_service.update_feedback(
+                    template=template,
+                    channel=channel,
+                    success=success,
+                    engagement=engagement
+                )
+                
+                # Log click to SQLite (persistent analytics)
+                if analytics_db:
+                    analytics_db.log_click(
+                        notification_id=notification_id,
+                        engagement=engagement
+                    )
+                
+                logger.info(f"✓ ML Feedback: notification={notification_id}, template={template}, channel={channel}, engagement={engagement}")
+                
+                return jsonify({
+                    'status': 'tracked',
+                    'notification_id': notification_id,
+                    'template': template,
+                    'channel': channel,
+                    'engagement': engagement,
+                    'feedback_sent': True
+                }), 200
+            else:
+                return jsonify({
+                    'status': 'tracked',
+                    'notification_id': notification_id,
+                    'warning': 'ML models not initialized'
+                }), 200
         
         except Exception as e:
+            logger.error(f"Error tracking click: {e}")
             return jsonify({'error': str(e)}), 500
     
     return app
