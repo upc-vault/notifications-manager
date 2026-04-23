@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Notifications - Web Push Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .status.subscribed {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.unsubscribed {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-subscribe {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-subscribe:hover {
+            background: #5568d3;
+        }
+
+        .btn-unsubscribe {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-unsubscribe:hover {
+            background: #c82333;
+        }
+
+        .btn-test {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-test:hover {
+            background: #218838;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .info-box p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .info-box code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .notifications-list {
+            margin-top: 30px;
+        }
+
+        .notifications-list h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .notification-item {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .notification-item .time {
+            color: #999;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .notification-item .title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .notification-item .body {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔔 Bank Notifications</h1>
+            <p>Web Push Notifications Demo</p>
+        </div>
+
+        <div id="status" class="status unsubscribed">
+            ⚠️ Not subscribed to notifications
+        </div>
+
+        <div id="controls">
+            <button id="subscribeBtn" class="btn-subscribe">
+                📬 Subscribe to Notifications
+            </button>
+            <button id="unsubscribeBtn" class="btn-unsubscribe hidden">
+                🔕 Unsubscribe from Notifications
+            </button>
+            <button id="testBtn" class="btn-test hidden">
+                🧪 Send Test Notification
+            </button>
+        </div>
+
+        <div class="info-box">
+            <h3>ℹ️ How it works</h3>
+            <p>
+                This demo uses the <code>Web Push API</code> to send notifications directly to your browser.
+            </p>
+            <p>
+                <strong>Steps:</strong><br>
+                1. Click "Subscribe to Notifications"<br>
+                2. Allow notifications when prompted<br>
+                3. Click "Send Test Notification" to receive a demo notification<br>
+                4. Notifications work even when this tab is closed!
+            </p>
+        </div>
+
+        <div id="notifications" class="notifications-list hidden">
+            <h3>📨 Recent Notifications</h3>
+            <div id="notificationsList"></div>
+        </div>
+    </div>
+
+    <script>
+        console.log('=== SCRIPT LOADING ===');
+        
+        const API_BASE_URL = 'http://localhost:5000';
+        let VAPID_PUBLIC_KEY = null;
+        let subscription = null;
+        let userId = null;
+
+        console.log('Variables initialized');
+        
+        // Generate or get user ID
+        function getUserId() {
+            let id = localStorage.getItem('userId');
+            if (!id) {
+                id = 'user_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('userId', id);
+            }
+            return id;
+        }
+
+        // Load VAPID public key from API
+        async function loadVapidKey() {
+            try {
+                console.log('Loading VAPID key from:', `${API_BASE_URL}/api/v1/webpush/vapid-public-key`);
+                const response = await fetch(`${API_BASE_URL}/api/v1/webpush/vapid-public-key`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                VAPID_PUBLIC_KEY = data.public_key;
+                console.log('VAPID public key loaded:', VAPID_PUBLIC_KEY.substring(0, 30) + '...');
+            } catch (error) {
+                console.error('Failed to load VAPID key:', error);
+                showStatus('❌ Failed to connect to server. Is the API running?', 'error');
+            }
+        }
+
+        // URL Base64 to Uint8Array
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding)
+                .replace(/\-/g, '+')
+                .replace(/_/g, '/');
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+
+        // Check if browser supports notifications
+        function checkNotificationSupport() {
+            if (!('serviceWorker' in navigator)) {
+                showStatus('❌ Service Workers not supported', 'error');
+                return false;
+            }
+            if (!('PushManager' in window)) {
+                showStatus('❌ Push notifications not supported', 'error');
+                return false;
+            }
+            return true;
+        }
+
+        // Register service worker
+        async function registerServiceWorker() {
+            try {
+                const registration = await navigator.serviceWorker.register('/sw.js');
+                console.log('Service Worker registered:', registration);
+                return registration;
+            } catch (error) {
+                console.error('Service Worker registration failed:', error);
+                showStatus('❌ Service Worker registration failed', 'error');
+                return null;
+            }
+        }
+
+        // Subscribe to push notifications
+        async function subscribe() {
+            console.log('Subscribe button clicked');
+            
+            if (!checkNotificationSupport()) {
+                console.error('Browser does not support notifications');
+                return;
+            }
+            
+            if (!VAPID_PUBLIC_KEY) {
+                console.error('VAPID key not loaded');
+                showStatus('❌ VAPID key not loaded. Check server connection.', 'error');
+                return;
+            }
+
+            try {
+                console.log('Requesting notification permission...');
+                showStatus('⏳ Requesting permission...', 'unsubscribed');
+                
+                // Request notification permission
+                const permission = await Notification.requestPermission();
+                console.log('Permission result:', permission);
+                
+                if (permission !== 'granted') {
+                    showStatus('❌ Notification permission denied', 'error');
+                    return;
+                }
+
+                console.log('Registering service worker...');
+                showStatus('⏳ Registering service worker...', 'unsubscribed');
+                
+                // Register service worker
+                const registration = await registerServiceWorker();
+                if (!registration) {
+                    console.error('Service worker registration failed');
+                    return;
+                }
+                
+                console.log('Service worker registered, subscribing to push...');
+                showStatus('⏳ Subscribing to push notifications...', 'unsubscribed');
+
+                // Subscribe to push
+                subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+                });
+
+                console.log('Push subscription obtained:', subscription);
+                showStatus('⏳ Saving subscription to server...', 'unsubscribed');
+
+                // Send subscription to server
+                const response = await fetch(`${API_BASE_URL}/api/v1/webpush/subscribe`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        subscription: subscription.toJSON()
+                    })
+                });
+
+                console.log('Server response:', response.status);
+
+                if (response.ok) {
+                    showStatus('✅ Successfully subscribed to notifications!', 'subscribed');
+                    document.getElementById('subscribeBtn').classList.add('hidden');
+                    document.getElementById('unsubscribeBtn').classList.remove('hidden');
+                    document.getElementById('testBtn').classList.remove('hidden');
+                    document.getElementById('notifications').classList.remove('hidden');
+                } else {
+                    const errorData = await response.json();
+                    console.error('Server error:', errorData);
+                    showStatus('❌ Failed to register subscription: ' + (errorData.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                console.error('Subscription failed:', error);
+                showStatus('❌ Subscription failed: ' + error.message, 'error');
+            }
+        }
+
+        // Unsubscribe from notifications
+        async function unsubscribe() {
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                const subscription = await registration.pushManager.getSubscription();
+                
+                if (subscription) {
+                    await subscription.unsubscribe();
+                    
+                    // Notify server
+                    await fetch(`${API_BASE_URL}/api/v1/webpush/unsubscribe`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: userId })
+                    });
+                }
+
+                showStatus('⚠️ Not subscribed to notifications', 'unsubscribed');
+                document.getElementById('subscribeBtn').classList.remove('hidden');
+                document.getElementById('unsubscribeBtn').classList.add('hidden');
+                document.getElementById('testBtn').classList.add('hidden');
+            } catch (error) {
+                console.error('Unsubscribe failed:', error);
+                showStatus('❌ Unsubscribe failed', 'error');
+            }
+        }
+
+        // Send test notification
+        async function sendTestNotification() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/v1/webpush/send-test`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+
+                if (response.ok) {
+                    addNotificationToList({
+                        title: 'Test Notification',
+                        body: 'This is a test notification from the bank!',
+                        timestamp: new Date().toISOString()
+                    });
+                } else {
+                    showStatus('❌ Failed to send test notification', 'error');
+                }
+            } catch (error) {
+                console.error('Test notification failed:', error);
+            }
+        }
+
+        // Show status message
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+        }
+
+        // Add notification to list
+        function addNotificationToList(notification) {
+            const list = document.getElementById('notificationsList');
+            const item = document.createElement('div');
+            item.className = 'notification-item';
+            
+            const time = new Date(notification.timestamp).toLocaleTimeString();
+            item.innerHTML = `
+                <div class="time">${time}</div>
+                <div class="title">${notification.title}</div>
+                <div class="body">${notification.body}</div>
+            `;
+            
+            list.insertBefore(item, list.firstChild);
+        }
+
+        // Check existing subscription
+        async function checkExistingSubscription() {
+            if ('serviceWorker' in navigator && 'PushManager' in window) {
+                try {
+                    const registration = await navigator.serviceWorker.ready;
+                    subscription = await registration.pushManager.getSubscription();
+                    
+                    if (subscription) {
+                        showStatus('✅ Subscribed to notifications', 'subscribed');
+                        document.getElementById('subscribeBtn').classList.add('hidden');
+                        document.getElementById('unsubscribeBtn').classList.remove('hidden');
+                        document.getElementById('testBtn').classList.remove('hidden');
+                        document.getElementById('notifications').classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error('Error checking subscription:', error);
+                }
+            }
+        }
+
+        // Initialize
+        async function init() {
+            console.log('=== INIT FUNCTION STARTED ===');
+            
+            try {
+                userId = getUserId();
+                console.log('User ID:', userId);
+                
+                await loadVapidKey();
+                await checkExistingSubscription();
+
+                // Event listeners - use onclick for reliability
+                const subscribeBtn = document.getElementById('subscribeBtn');
+                const unsubscribeBtn = document.getElementById('unsubscribeBtn');
+                const testBtn = document.getElementById('testBtn');
+                
+                if (subscribeBtn) {
+                    subscribeBtn.onclick = function(e) {
+                        console.log('Subscribe button clicked');
+                        e.preventDefault();
+                        subscribe();
+                    };
+                }
+                
+                if (unsubscribeBtn) {
+                    unsubscribeBtn.onclick = function(e) {
+                        e.preventDefault();
+                        unsubscribe();
+                    };
+                }
+                
+                if (testBtn) {
+                    testBtn.onclick = function(e) {
+                        e.preventDefault();
+                        sendTestNotification();
+                    };
+                }
+
+                // Listen for messages from service worker
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.addEventListener('message', event => {
+                        console.log('Message from service worker:', event.data);
+                        if (event.data && event.data.type === 'notification') {
+                            addNotificationToList(event.data.notification);
+                        }
+                    });
+                }
+                
+                console.log('=== INIT FUNCTION COMPLETED ===');
+            } catch (error) {
+                console.error('ERROR IN INIT:', error);
+            }
+        }
+
+        // Start when page loads
+        console.log('=== SCRIPT LOADED ===');
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>

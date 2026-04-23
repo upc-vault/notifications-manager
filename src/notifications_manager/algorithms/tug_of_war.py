@@ -15,6 +15,7 @@ class NotificationChannel(Enum):
     PUSH = "push"
     EMAIL = "email"
     WHATSAPP = "whatsapp"
+    WEBPUSH = "webpush"
 
 
 @dataclass

@@ -1,0 +1,5 @@
+﻿{
+  "public_key": "BLjJcig90rpT0aw78dG_3VJ-aF4pmeSt6VbeVwnv1JNG88hRjkfQjzfOatwKJMNueh_OR3kfZwWX7DJiit5uPtk",
+  "private_key_file": "config/vapid_private.pem",
+  "email": "mailto:admin@yourbank.com"
+}
