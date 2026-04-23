@@ -1,0 +1,99 @@
+{
+  "timestamp": "2026-04-22T22:53:21.204770",
+  "num_episodes": 10000,
+  "seed": 42,
+  "template_statistics": {
+    "formal": {
+      "total_pulls": 1480,
+      "success_count": 1155,
+      "failure_count": 325,
+      "success_rate": 0.7804054054054054,
+      "avg_engagement": 0.5694066776494486,
+      "ucb_score": 0.7271820942165093
+    },
+    "concise": {
+      "total_pulls": 2584,
+      "success_count": 2039,
+      "failure_count": 545,
+      "success_rate": 0.7890866873065016,
+      "avg_engagement": 0.6622673186288639,
+      "ucb_score": 0.7816727105795569
+    },
+    "friendly": {
+      "total_pulls": 732,
+      "success_count": 566,
+      "failure_count": 166,
+      "success_rate": 0.773224043715847,
+      "avg_engagement": 0.4985018489513217,
+      "ucb_score": 0.722845949006081
+    },
+    "urgent": {
+      "total_pulls": 3235,
+      "success_count": 2531,
+      "failure_count": 704,
+      "success_rate": 0.7823802163833076,
+      "avg_engagement": 0.6760440053951741,
+      "ucb_score": 0.7827608684571793
+    },
+    "informative": {
+      "total_pulls": 1235,
+      "success_count": 946,
+      "failure_count": 289,
+      "success_rate": 0.7659919028340081,
+      "avg_engagement": 0.534378379035521,
+      "ucb_score": 0.7070960266687971
+    },
+    "promotional": {
+      "total_pulls": 734,
+      "success_count": 548,
+      "failure_count": 186,
+      "success_rate": 0.7465940054495913,
+      "avg_engagement": 0.49953321263852846,
+      "ucb_score": 0.723571458290601
+    }
+  },
+  "channel_statistics": {
+    "sms": {
+      "success_rate": 0.5863483985465382,
+      "availability": 1.0,
+      "cost": 0.9,
+      "latency": 2.0,
+      "user_preference": 0.7,
+      "selections": 1005,
+      "selection_rate": 0.1005
+    },
+    "push": {
+      "success_rate": 0.6637187536974414,
+      "availability": 0.9,
+      "cost": 0.1,
+      "latency": 0.5,
+      "user_preference": 0.8,
+      "selections": 3401,
+      "selection_rate": 0.3401
+    },
+    "email": {
+      "success_rate": 0.30045813844610314,
+      "availability": 1.0,
+      "cost": 0.05,
+      "latency": 5.0,
+      "user_preference": 0.6,
+      "selections": 272,
+      "selection_rate": 0.0272
+    },
+    "whatsapp": {
+      "success_rate": 0.8912994914244307,
+      "availability": 1.0,
+      "cost": 0.3,
+      "latency": 1.5,
+      "user_preference": 0.85,
+      "selections": 5322,
+      "selection_rate": 0.5322
+    }
+  },
+  "performance_metrics": {
+    "avg_template_engagement": 0.6132541021329471,
+    "avg_channel_success": 0.7785,
+    "avg_combined_reward": 0.6132541021329471,
+    "total_cumulative_reward": 6132.541021329478
+  }
+}

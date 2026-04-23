@@ -1,0 +1,69 @@
+{
+  "timestamp": "2026-04-22T22:38:59.073606",
+  "num_episodes": 10000,
+  "seed": 42,
+  "ucb_statistics": {
+    "sms": {
+      "total_pulls": 4022,
+      "success_count": 3258,
+      "failure_count": 764,
+      "success_rate": 0.810044753853804,
+      "ucb_score": 0.9057529564112351
+    },
+    "push": {
+      "total_pulls": 1675,
+      "success_count": 1267,
+      "failure_count": 408,
+      "success_rate": 0.7564179104477612,
+      "ucb_score": 0.9047252989129916
+    },
+    "email": {
+      "total_pulls": 176,
+      "success_count": 78,
+      "failure_count": 98,
+      "success_rate": 0.4431818181818182,
+      "ucb_score": 0.900705795868843
+    },
+    "whatsapp": {
+      "total_pulls": 4127,
+      "success_count": 3346,
+      "failure_count": 781,
+      "success_rate": 0.8107584201599225,
+      "ucb_score": 0.9052412644608491
+    }
+  },
+  "epsilon_statistics": {
+    "sms": {
+      "total_pulls": 8000,
+      "success_count": 6521,
+      "failure_count": 1479,
+      "success_rate": 0.815125
+    },
+    "push": {
+      "total_pulls": 589,
+      "success_count": 465,
+      "failure_count": 124,
+      "success_rate": 0.7894736842105263
+    },
+    "email": {
+      "total_pulls": 371,
+      "success_count": 167,
+      "failure_count": 204,
+      "success_rate": 0.4501347708894879
+    },
+    "whatsapp": {
+      "total_pulls": 1040,
+      "success_count": 827,
+      "failure_count": 213,
+      "success_rate": 0.7951923076923076
+    }
+  },
+  "total_rewards": {
+    "ucb": 7949.0,
+    "epsilon": 7980.0
+  },
+  "average_rewards": {
+    "ucb": 0.7949,
+    "epsilon": 0.798
+  }
+}
