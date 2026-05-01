@@ -3,18 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ML Models Dashboard - Live Learning</title>
+    <title>ML Dashboard - Omega</title>
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/navbar.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             background: #f5f5f5;
+        }
+        .navbar {
+            background: white;
+            margin-bottom: 20px;
         }
         .container {
             max-width: 1400px;
             margin: 0 auto;
+            padding: 20px;
         }
         h1 {
             color: #667eea;
@@ -101,8 +108,32 @@
         .log-info { color: #17a2b8; }
     </style>
 </head>
-<body>
-    <div class="container">
+<body>    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/admin" style="text-decoration: none;"><div class="logo">Ω Omega</div></a>
+            <ul class="nav-links">
+                <li><a href="/admin">Admin Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle">Test ▼</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/test/webpush">WebPush</a></li>
+                        <li><a href="/test/email">Email</a></li>
+                        <li><a href="/test/sms">SMS</a></li>
+                        <li><a href="/test/push">Push</a></li>
+                    </ul>
+                </li>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/templates">Templates</a></li>
+                <li><a href="/logs">Logs</a></li>
+                <li><a href="/intelligence">AI Demo</a></li>
+                <li class="user-section">
+                    <div class="user-avatar" id="user-avatar">A</div>
+                    <span class="user-name" id="user-name">Admin</span>
+                </li>
+                <li><a href="#" id="logout-link" style="color: #dc3545;">Logout</a></li>
+            </ul>
+        </div>
+    </nav>    <div class="container">
         <h1>🧠 ML Models Dashboard - Live Learning</h1>
         <p class="subtitle">Watch the algorithms learn from user feedback in real-time</p>
 
@@ -137,213 +168,36 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/js/dashboard.js"></script>
     <script>
-        const API = 'http://localhost:5000';
-        let templateChart, channelChart;
-
-        function log(message, type = 'info') {
-            const logDiv = document.getElementById('log');
-            const entry = document.createElement('div');
-            entry.className = `log-entry log-${type}`;
-            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            logDiv.insertBefore(entry, logDiv.firstChild);
-            console.log(message);
-        }
-
-        async function refreshData() {
+        // Check authentication and load user info
+        async function checkAuth() {
             try {
-                log('Fetching model statistics...', 'info');
-                const response = await fetch(`${API}/api/v1/models/stats`);
+                const response = await fetch('/api/v1/auth/check');
                 const data = await response.json();
-                
-                updateTemplateChart(data.template_statistics);
-                updateChannelChart(data.channel_statistics);
-                updateStats(data);
-                
-                log('✓ Statistics updated', 'success');
+                if (data.authenticated) {
+                    const username = data.username || 'Admin';
+                    document.getElementById('user-name').textContent = username;
+                    document.getElementById('user-avatar').textContent = username.charAt(0).toUpperCase();
+                }
             } catch (error) {
-                log('✗ Failed to fetch statistics: ' + error.message, 'error');
+                console.error('Auth check failed:', error);
             }
         }
+        checkAuth();
 
-        function updateTemplateChart(templates) {
-            const ctx = document.getElementById('templateChart').getContext('2d');
-            
-            const labels = Object.keys(templates);
-            const engagementData = labels.map(t => (templates[t].avg_engagement * 100).toFixed(1));
-            const successData = labels.map(t => (templates[t].success_rate * 100).toFixed(1));
-            
-            if (templateChart) templateChart.destroy();
-            
-            templateChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Engagement %',
-                            data: engagementData,
-                            backgroundColor: 'rgba(102, 126, 234, 0.7)',
-                            borderColor: 'rgba(102, 126, 234, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Success Rate %',
-                            data: successData,
-                            backgroundColor: 'rgba(40, 167, 69, 0.7)',
-                            borderColor: 'rgba(40, 167, 69, 1)',
-                            borderWidth: 1
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100
-                        }
-                    }
-                }
-            });
-
-            // Update template stats
-            const statsDiv = document.getElementById('templateStats');
-            statsDiv.innerHTML = labels.map(t => `
-                <div class="stat-box">
-                    <div class="stat-label">${t}</div>
-                    <div class="stat-value">${templates[t].count}</div>
-                    <div style="font-size: 11px; color: #666;">pulls</div>
-                </div>
-            `).join('');
-        }
-
-        function updateChannelChart(channels) {
-            const ctx = document.getElementById('channelChart').getContext('2d');
-            
-            const labels = Object.keys(channels);
-            const successData = labels.map(c => (channels[c].success_rate * 100).toFixed(1));
-            
-            if (channelChart) channelChart.destroy();
-            
-            channelChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Success Rate %',
-                        data: successData,
-                        backgroundColor: [
-                            'rgba(37, 211, 102, 0.7)',
-                            'rgba(52, 152, 219, 0.7)',
-                            'rgba(241, 196, 15, 0.7)',
-                            'rgba(231, 76, 60, 0.7)',
-                            'rgba(155, 89, 182, 0.7)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100
-                        }
-                    }
-                }
-            });
-
-            // Update channel stats
-            const statsDiv = document.getElementById('channelStats');
-            statsDiv.innerHTML = labels.map(c => `
-                <div class="stat-box">
-                    <div class="stat-label">${c}</div>
-                    <div class="stat-value">${channels[c].total_selections}</div>
-                    <div style="font-size: 11px; color: #666;">selections</div>
-                </div>
-            `).join('');
-        }
-
-        function updateStats(data) {
-            const templates = data.template_statistics;
-            const channels = data.channel_statistics;
-            
-            const totalPulls = Object.values(templates).reduce((sum, t) => sum + t.count, 0);
-            const totalSelections = Object.values(channels).reduce((sum, c) => sum + c.total_selections, 0);
-            const avgEngagement = Object.values(templates).reduce((sum, t) => sum + t.avg_engagement, 0) / Object.keys(templates).length;
-            const avgSuccess = Object.values(channels).reduce((sum, c) => sum + c.success_rate, 0) / Object.keys(channels).length;
-
-            document.getElementById('overallStats').innerHTML = `
-                <div class="stat-box">
-                    <div class="stat-label">Total Template Pulls</div>
-                    <div class="stat-value">${totalPulls}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Total Channel Selections</div>
-                    <div class="stat-value">${totalSelections}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Avg Engagement</div>
-                    <div class="stat-value">${(avgEngagement * 100).toFixed(1)}%</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Avg Success Rate</div>
-                    <div class="stat-value">${(avgSuccess * 100).toFixed(1)}%</div>
-                </div>
-            `;
-        }
-
-        async function simulateFeedback() {
-            const templates = ['urgent', 'friendly', 'formal', 'concise', 'promotional', 'personalized', 'informative', 'security', 'reward', 'reminder'];
-            const channels = ['whatsapp', 'sms', 'email', 'push', 'webpush'];
-            
-            const template = templates[Math.floor(Math.random() * templates.length)];
-            const channel = channels[Math.floor(Math.random() * channels.length)];
-            const success = Math.random() > 0.3; // 70% success rate
-            const engagement = success ? Math.random() * 0.5 + 0.5 : Math.random() * 0.3; // Higher if success
-
+        // Logout functionality
+        document.getElementById('logout-link').addEventListener('click', async (e) => {
+            e.preventDefault();
             try {
-                log(`Simulating feedback: ${template} + ${channel} (success=${success})`, 'info');
-                
-                const response = await fetch(`${API}/api/v1/feedback`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        notification_id: 'sim_' + Date.now(),
-                        template: template,
-                        channel: channel,
-                        success: success,
-                        engagement: engagement
-                    })
-                });
-
-                if (response.ok) {
-                    log(`✓ Feedback processed: ${template} engagement=${engagement.toFixed(2)}`, 'success');
-                    setTimeout(refreshData, 500);
-                } else {
-                    const error = await response.json();
-                    log(`✗ Feedback failed: ${error.message}`, 'error');
-                }
+                await fetch('/api/v1/auth/logout', { method: 'POST' });
+                window.location.href = '/';
             } catch (error) {
-                log(`✗ Error: ${error.message}`, 'error');
+                console.error('Logout failed:', error);
+                window.location.href = '/';
             }
-        }
-
-        async function simulateBatch() {
-            log('Starting batch simulation (10 feedbacks)...', 'info');
-            for (let i = 0; i < 10; i++) {
-                await simulateFeedback();
-                await new Promise(resolve => setTimeout(resolve, 200));
-            }
-            log('✓ Batch simulation complete', 'success');
-        }
-
-        // Initial load
-        refreshData();
-        
-        // Auto-refresh every 10 seconds
-        setInterval(refreshData, 10000);
+        });
     </script>
 </body>
 </html>

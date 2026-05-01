@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Push Testing - Omega</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/navbar.css">
+    <link rel="stylesheet" href="/static/css/page-header.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 0;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .coming-soon {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        .coming-soon-icon { font-size: 80px; margin-bottom: 20px; }
+        .coming-soon h2 { color: #667eea; font-size: 32px; margin-bottom: 15px; }
+        .coming-soon p { color: #666; font-size: 16px; line-height: 1.6; margin-bottom: 30px; }
+        .btn { padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 10px; font-weight: 600; display: inline-block; }
+        .btn:hover { background: #5568d3; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/admin" style="text-decoration: none;"><div class="logo">Ω Omega</div></a>
+            <ul class="nav-links">
+                <li><a href="/admin">Admin Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle">Test ▼</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/test/webpush">WebPush</a></li>
+                        <li><a href="/test/email">Email</a></li>
+                        <li><a href="/test/sms">SMS</a></li>
+                        <li><a href="/test/push">Push</a></li>
+                    </ul>
+                </li>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/templates">Templates</a></li>
+                <li><a href="/logs">Logs</a></li>
+                <li><a href="/intelligence">AI Demo</a></li>
+                <li class="user-section">
+                    <div class="user-avatar" id="user-avatar">A</div>
+                    <span class="user-name" id="user-name">Admin</span>
+                </li>
+                <li><a href="#" id="logout-link" style="color: #dc3545;">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="page-header gradient-bg">
+            <h1>📱 Push Testing Center</h1>
+            <p>Test mobile push notifications</p>
+        </div>
+        <div class="coming-soon">
+            <div class="coming-soon-icon">📱</div>
+            <h2>Coming Soon</h2>
+            <p>Mobile push notification testing is under development. This feature will support Firebase Cloud Messaging (FCM) and Apple Push Notification service (APNs) for iOS and Android devices.</p>
+            <a href="/test/webpush" class="btn">Try WebPush Testing</a>
+        </div>
+    </div>
+    <script>
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/v1/auth/check');
+                const data = await response.json();
+                if (data.authenticated) {
+                    const username = data.username || 'Admin';
+                    document.getElementById('user-name').textContent = username;
+                    document.getElementById('user-avatar').textContent = username.charAt(0).toUpperCase();
+                }
+            } catch (error) { console.error('Auth check failed:', error); }
+        }
+        checkAuth();
+        document.getElementById('logout-link').addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await fetch('/api/v1/auth/logout', { method: 'POST' });
+                window.location.href = '/';
+            } catch (error) { window.location.href = '/'; }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+/**
+ * Page Header Styles
+ * Shared header component for pages
+ */
+
+.page-header {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+/* Header for pages with gradient background */
+.page-header.gradient-bg {
+    color: white;
+}
+
+.page-header.gradient-bg h1 {
+    font-size: var(--font-size-4xl);
+    margin-bottom: 10px;
+    color: white;
+}
+
+.page-header.gradient-bg p {
+    font-size: var(--font-size-lg);
+    opacity: 0.95;
+    color: white;
+}
+
+/* Header for pages with white card background */
+.page-header.card-style {
+    background: white;
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.page-header.card-style h1 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    font-size: var(--font-size-3xl);
+}
+
+.page-header.card-style p {
+    color: var(--text-secondary);
+    font-size: var(--font-size-base);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .page-header.gradient-bg h1 {
+        font-size: 28px;
+    }
+
+    .page-header.card-style h1 {
+        font-size: var(--font-size-2xl);
+    }
+
+    .page-header.gradient-bg p,
+    .page-header.card-style p {
+        font-size: var(--font-size-sm);
+    }
+}

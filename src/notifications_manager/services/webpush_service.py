@@ -326,6 +326,15 @@ class WebPushService:
             logger.error(f"Failed to get notification metadata: {e}")
             return None
     
+    def get_vapid_public_key(self) -> Optional[str]:
+        """
+        Get the VAPID public key for client-side subscription
+        
+        Returns:
+            VAPID public key in base64 format or None if not configured
+        """
+        return self.vapid_public_key
+    
     def get_stats(self) -> Dict[str, Any]:
         """Get subscription statistics"""
         try:

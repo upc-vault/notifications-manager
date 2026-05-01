@@ -567,3 +567,73 @@ class AnalyticsDatabase:
         except Exception as e:
             logger.error(f"Failed to delete template: {e}")
             return False
+    
+    def get_recent_notifications(self, limit: int = 100, offset: int = 0) -> List[Dict[str, Any]]:
+        """
+        Get recent notifications with click status
+        
+        Args:
+            limit: Maximum number of notifications to return
+            offset: Number of notifications to skip
+        
+        Returns:
+            List of notification records with click status
+        """
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT 
+                        n.notification_id,
+                        n.user_id,
+                        n.template,
+                        n.channel,
+                        n.title,
+                        n.body,
+                        n.sent_at,
+                        n.metadata,
+                        CASE WHEN c.click_id IS NOT NULL THEN 1 ELSE 0 END as was_clicked,
+                        c.clicked_at
+                    FROM notifications n
+                    LEFT JOIN clicks c ON n.notification_id = c.notification_id
+                    ORDER BY n.sent_at DESC
+                    LIMIT ? OFFSET ?
+                """, (limit, offset))
+                
+                rows = cursor.fetchall()
+                notifications = []
+                
+                for row in rows:
+                    metadata = json.loads(row['metadata']) if row['metadata'] else {}
+                    notifications.append({
+                        'notification_id': row['notification_id'],
+                        'user_id': row['user_id'],
+                        'template': row['template'],
+                        'channel': row['channel'],
+                        'title': row['title'],
+                        'body': row['body'],
+                        'sent_at': row['sent_at'],
+                        'success': metadata.get('success', True),
+                        'was_clicked': bool(row['was_clicked']),
+                        'clicked_at': row['clicked_at'],
+                        'ml_decision': metadata.get('ml_decision', {}),
+                        'error': metadata.get('error')
+                    })
+                
+                return notifications
+        
+        except Exception as e:
+            logger.error(f"Failed to get recent notifications: {e}")
+            return []
+    
+    def get_notifications_count(self) -> int:
+        """Get total count of notifications"""
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT COUNT(*) as count FROM notifications")
+                row = cursor.fetchone()
+                return row['count'] if row else 0
+        except Exception as e:
+            logger.error(f"Failed to get notifications count: {e}")
+            return 0

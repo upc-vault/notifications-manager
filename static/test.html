@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications Test - Omega</title>
+    <link rel="stylesheet" href="/static/css/navbar.css">
+    <link rel="stylesheet" href="/static/css/page-header.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+        }
+
+        .test-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+        }
+
+        .test-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .test-card.disabled {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .test-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .test-icon {
+            font-size: 48px;
+        }
+
+        .test-title {
+            flex: 1;
+        }
+
+        .test-title h2 {
+            color: #667eea;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .test-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-coming-soon {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .status-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .status-box.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-box.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-box.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .status-box.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .coming-soon-overlay {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .coming-soon-overlay h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .template-selector {
+            margin-bottom: 20px;
+        }
+
+        .template-option {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .template-option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .template-option.selected {
+            border-color: #667eea;
+            background: #f0f3ff;
+        }
+
+        .template-option h4 {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .template-option p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .navbar-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-links {
+                gap: 15px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/admin" style="text-decoration: none;"><div class="logo">Ω Omega</div></a>
+            <ul class="nav-links">
+                <li><a href="/admin">Admin Home</a></li>
+                <li><a href="/test">Test</a></li>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/templates">Templates</a></li>
+                <li class="user-section">
+                    <div class="user-avatar" id="user-avatar">A</div>
+                    <span class="user-name" id="user-name">Admin</span>
+                </li>
+                <li><a href="#" id="logout-link" style="color: #dc3545;">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header gradient-bg">
+            <h1>Notification Testing Center</h1>
+            <p>Test different notification channels and monitor delivery success</p>
+        </div>
+
+        <div class="test-grid">
+            <!-- WebPush Testing -->
+            <div class="test-card">
+                <div class="test-header">
+                    <div class="test-icon">🌐</div>
+                    <div class="test-title">
+                        <h2>Web Push</h2>
+                        <span class="test-status status-active">Active</span>
+                    </div>
+                </div>
+
+                <div id="webpush-status" class="status-box info">
+                    Checking browser support...
+                </div>
+
+                <div id="webpush-form" style="display: none;">
+                    <div class="form-group">
+                        <label>User ID</label>
+                        <input type="text" id="webpush-userid" placeholder="Enter user ID" value="user123">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notification Title</label>
+                        <input type="text" id="webpush-title" placeholder="Enter notification title" value="New Message">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea id="webpush-message" placeholder="Enter notification message">You have a new message from your bank!</textarea>
+                    </div>
+
+                    <button class="btn" id="subscribe-btn">Subscribe to Notifications</button>
+                    <button class="btn" id="send-test-btn" style="display: none; margin-top: 10px;">Send Test Notification</button>
+
+                    <div id="template-section" style="display: none; margin-top: 20px;">
+                        <h3 style="margin-bottom: 15px; color: #667eea;">Or Use Template</h3>
+                        <div id="template-list"></div>
+                        <button class="btn btn-secondary" id="send-template-btn" disabled>Send with Selected Template</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Push Notifications -->
+            <div class="test-card disabled">
+                <div class="test-header">
+                    <div class="test-icon">📱</div>
+                    <div class="test-title">
+                        <h2>Push Notifications</h2>
+                        <span class="test-status status-coming-soon">Coming Soon</span>
+                    </div>
+                </div>
+                <div class="coming-soon-overlay">
+                    <h3>Mobile Push Notifications</h3>
+                    <p>iOS and Android push notifications will be available soon. This will support Firebase Cloud Messaging (FCM) and Apple Push Notification service (APNs).</p>
+                </div>
+            </div>
+
+            <!-- Email Testing -->
+            <div class="test-card disabled">
+                <div class="test-header">
+                    <div class="test-icon">📧</div>
+                    <div class="test-title">
+                        <h2>Email</h2>
+                        <span class="test-status status-coming-soon">Coming Soon</span>
+                    </div>
+                </div>
+                <div class="coming-soon-overlay">
+                    <h3>Email Notifications</h3>
+                    <p>Send email notifications using templates. Support for SMTP, SendGrid, and other email providers coming soon.</p>
+                </div>
+            </div>
+
+            <!-- SMS Testing -->
+            <div class="test-card disabled">
+                <div class="test-header">
+                    <div class="test-icon">💬</div>
+                    <div class="test-title">
+                        <h2>SMS</h2>
+                        <span class="test-status status-coming-soon">Coming Soon</span>
+                    </div>
+                </div>
+                <div class="coming-soon-overlay">
+                    <h3>SMS Notifications</h3>
+                    <p>Send SMS notifications via Twilio, AWS SNS, or other SMS gateways. Perfect for time-sensitive alerts.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/template-integration.js"></script>
+    <script>
+        // Check authentication and load user info
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/v1/auth/check');
+                const data = await response.json();
+                if (data.authenticated) {
+                    const username = data.username || 'Admin';
+                    document.getElementById('user-name').textContent = username;
+                    document.getElementById('user-avatar').textContent = username.charAt(0).toUpperCase();
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+            }
+        }
+        checkAuth();
+
+        // Logout functionality
+        document.getElementById('logout-link').addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await fetch('/api/v1/auth/logout', { method: 'POST' });
+                window.location.href = '/';
+            } catch (error) {
+                console.error('Logout failed:', error);
+                window.location.href = '/';
+            }
+        });
+
+        // WebPush functionality
+        let subscriptionData = null;
+        let selectedTemplate = null;
+
+        async function checkBrowserSupport() {
+            const statusDiv = document.getElementById('webpush-status');
+            const formDiv = document.getElementById('webpush-form');
+
+            if (!('serviceWorker' in navigator)) {
+                statusDiv.className = 'status-box error';
+                statusDiv.textContent = '❌ Service Worker not supported in this browser';
+                return false;
+            }
+
+            if (!('PushManager' in window)) {
+                statusDiv.className = 'status-box error';
+                statusDiv.textContent = '❌ Push notifications not supported in this browser';
+                return false;
+            }
+
+            statusDiv.className = 'status-box success';
+            statusDiv.textContent = '✅ Browser supports Web Push notifications';
+            formDiv.style.display = 'block';
+            
+            // Load templates
+            await loadTemplates();
+            
+            return true;
+        }
+
+        async function loadTemplates() {
+            try {
+                const response = await fetch('/api/v1/templates');
+                const data = await response.json();
+                
+                if (data.success && data.templates.length > 0) {
+                    const templateList = document.getElementById('template-list');
+                    templateList.innerHTML = data.templates.map(template => `
+                        <div class="template-option" data-template-id="${template.id}">
+                            <h4>${template.name}</h4>
+                            <p>${template.message}</p>
+                        </div>
+                    `).join('');
+                    
+                    // Add click handlers
+                    document.querySelectorAll('.template-option').forEach(option => {
+                        option.addEventListener('click', () => {
+                            document.querySelectorAll('.template-option').forEach(opt => 
+                                opt.classList.remove('selected'));
+                            option.classList.add('selected');
+                            selectedTemplate = option.dataset.templateId;
+                            document.getElementById('send-template-btn').disabled = false;
+                        });
+                    });
+                    
+                    document.getElementById('template-section').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error loading templates:', error);
+            }
+        }
+
+        async function subscribeUser() {
+            const statusDiv = document.getElementById('webpush-status');
+            const subscribeBtn = document.getElementById('subscribe-btn');
+            const sendBtn = document.getElementById('send-test-btn');
+
+            try {
+                statusDiv.className = 'status-box info';
+                statusDiv.textContent = 'Registering service worker...';
+
+                const registration = await navigator.serviceWorker.register('/sw.js');
+                await navigator.serviceWorker.ready;
+
+                statusDiv.textContent = 'Requesting notification permission...';
+                const permission = await Notification.requestPermission();
+
+                if (permission !== 'granted') {
+                    statusDiv.className = 'status-box error';
+                    statusDiv.textContent = '❌ Notification permission denied';
+                    return;
+                }
+
+                statusDiv.textContent = 'Getting VAPID public key...';
+                const vapidResponse = await fetch('/api/v1/webpush/vapid-public-key');
+                const vapidData = await vapidResponse.json();
+
+                statusDiv.textContent = 'Subscribing to push service...';
+                const subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: vapidData.public_key
+                });
+
+                statusDiv.textContent = 'Registering subscription with server...';
+                const userId = document.getElementById('webpush-userid').value;
+                const response = await fetch('/api/v1/webpush/subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        subscription: subscription.toJSON()
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    subscriptionData = subscription.toJSON();
+                    statusDiv.className = 'status-box success';
+                    statusDiv.textContent = '✅ Successfully subscribed! You can now send test notifications.';
+                    subscribeBtn.style.display = 'none';
+                    sendBtn.style.display = 'block';
+                } else {
+                    throw new Error(data.error || 'Subscription failed');
+                }
+            } catch (error) {
+                statusDiv.className = 'status-box error';
+                statusDiv.textContent = `❌ Error: ${error.message}`;
+                console.error('Subscription error:', error);
+            }
+        }
+
+        async function sendTestNotification() {
+            const statusDiv = document.getElementById('webpush-status');
+            const sendBtn = document.getElementById('send-test-btn');
+
+            try {
+                sendBtn.disabled = true;
+                statusDiv.className = 'status-box info';
+                statusDiv.textContent = 'Sending test notification...';
+
+                const userId = document.getElementById('webpush-userid').value;
+                const title = document.getElementById('webpush-title').value;
+                const message = document.getElementById('webpush-message').value;
+
+                const response = await fetch('/api/v1/webpush/send-test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        title: title,
+                        message: message
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    statusDiv.className = 'status-box success';
+                    statusDiv.textContent = `✅ ${data.message}`;
+                } else {
+                    throw new Error(data.error || 'Send failed');
+                }
+            } catch (error) {
+                statusDiv.className = 'status-box error';
+                statusDiv.textContent = `❌ Error: ${error.message}`;
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        async function sendWithTemplate() {
+            if (!selectedTemplate) return;
+
+            const statusDiv = document.getElementById('webpush-status');
+            const sendBtn = document.getElementById('send-template-btn');
+
+            try {
+                sendBtn.disabled = true;
+                statusDiv.className = 'status-box info';
+                statusDiv.textContent = 'Sending notification with template...';
+
+                const userId = document.getElementById('webpush-userid').value;
+
+                const response = await fetch('/api/v1/webpush/send-with-template', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        template_id: parseInt(selectedTemplate)
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    statusDiv.className = 'status-box success';
+                    statusDiv.textContent = `✅ Notification sent successfully!`;
+                } else {
+                    throw new Error(data.error || 'Send failed');
+                }
+            } catch (error) {
+                statusDiv.className = 'status-box error';
+                statusDiv.textContent = `❌ Error: ${error.message}`;
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkBrowserSupport();
+
+            document.getElementById('subscribe-btn').addEventListener('click', subscribeUser);
+            document.getElementById('send-test-btn').addEventListener('click', sendTestNotification);
+            document.getElementById('send-template-btn').addEventListener('click', sendWithTemplate);
+        });
+    </script>
+</body>
+</html>

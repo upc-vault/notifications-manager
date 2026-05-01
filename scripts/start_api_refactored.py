@@ -1,5 +1,6 @@
 """
-Start the Notifications Manager API
+Start the Notifications Manager API (Refactored Version)
+Uses the new modular blueprint architecture
 """
 
 import sys
@@ -8,14 +9,19 @@ import os
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from notifications_manager.api.app import create_app
+from notifications_manager.api.app_refactored import create_app
 
 if __name__ == '__main__':
     app = create_app()
     
     print("\n" + "="*70)
-    print("🚀 NOTIFICATIONS MANAGER API")
+    print("🚀 NOTIFICATIONS MANAGER API (Refactored)")
     print("="*70)
+    print()
+    print("✨ New Features:")
+    print("   • Modular blueprints (webpush, templates, analytics, notifications)")
+    print("   • Configuration management (dev/prod/test)")
+    print("   • Extracted JavaScript (static/js/)")
     print()
     print("📡 API Endpoints:")
     print("   POST   /api/v1/notifications          - Create notification")
@@ -25,12 +31,11 @@ if __name__ == '__main__':
     print("   GET    /api/v1/models/stats           - ML statistics")
     print()
     print("🌐 Web Pages:")
-    print("   http://localhost:5000/                - Landing Page (System Overview)")
-    print("   http://localhost:5000/test            - Testing Center (WebPush, Email, SMS, Push)")
-    print("   http://localhost:5000/dashboard       - ML Dashboard (Analytics & Stats)")
-    print("   http://localhost:5000/templates       - Template Manager (CRUD)")
+    print("   http://localhost:5000/                - WebPush Demo")
+    print("   http://localhost:5000/dashboard       - ML Dashboard")
+    print("   http://localhost:5000/templates       - Template Manager")
     print()
-    print("💡 Environment: development")
+    print("💡 Environment: " + os.getenv('FLASK_ENV', 'development'))
     print("="*70)
     print()
     
