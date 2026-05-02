@@ -4,15 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Test Push Notifications - Ω Omega</title>
+    <link rel="manifest" href="/static/manifest.json">
     <link rel="stylesheet" href="/static/css/variables.css">
     <link rel="stylesheet" href="/static/css/navbar.css">
+    <link rel="stylesheet" href="/static/css/page-header.css">
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: var(--font-family-base);
-            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 0;
-            background: var(--background-color);
-            color: var(--text-color);
         }
 
         .container {
@@ -295,31 +297,29 @@
 <body>
     <!-- Navigation Bar -->
     <nav class="navbar">
-        <div class="nav-brand">
-            <span class="brand-icon">Ω</span>
-            <span class="brand-name">Omega</span>
-        </div>
-        <div class="nav-links">
-            <a href="/admin">Admin</a>
-            <div class="dropdown">
-                <a href="#" class="dropbtn">
-                    Test ▼
-                </a>
-                <div class="dropdown-content">
-                    <a href="/test/webpush">WebPush</a>
-                    <a href="/test/email">Email</a>
-                    <a href="/test/sms">SMS</a>
-                    <a href="/test/push">Push</a>
-                </div>
-            </div>
-            <a href="/dashboard">Dashboard</a>
-            <a href="/templates">Templates</a>
-            <a href="/logs">Logs</a>
-            <a href="/intelligence">AI Demo</a>
-            <div class="nav-user">
-                <div class="user-avatar">A</div>
-                <span class="user-name">Admin</span>
-            </div>
+        <div class="navbar-content">
+            <a href="/admin" style="text-decoration: none;"><div class="logo">Ω Omega</div></a>
+            <ul class="nav-links">
+                <li><a href="/admin">Admin Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle">Test ▼</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/test/webpush">WebPush</a></li>
+                        <li><a href="/test/email">Email</a></li>
+                        <li><a href="/test/sms">SMS</a></li>
+                        <li><a href="/test/push">Push</a></li>
+                    </ul>
+                </li>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/templates">Templates</a></li>
+                <li><a href="/logs">Logs</a></li>
+                <li><a href="/intelligence">AI Demo</a></li>
+                <li class="user-section">
+                    <div class="user-avatar" id="user-avatar">A</div>
+                    <span class="user-name" id="user-name">Admin</span>
+                </li>
+                <li><a href="#" id="logout-link" style="color: #dc3545;">Logout</a></li>
+            </ul>
         </div>
     </nav>
 
