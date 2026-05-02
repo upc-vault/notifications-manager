@@ -1,0 +1,10 @@
+{
+  "README": "Place your firebase-credentials.json file here",
+  "instructions": [
+    "1. Go to https://console.firebase.google.com",
+    "2. Select your project",
+    "3. Go to Project Settings > Service Accounts",
+    "4. Click 'Generate New Private Key'",
+    "5. Save the downloaded file as 'firebase-credentials.json' in this directory"
+  ]
+}

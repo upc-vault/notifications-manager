@@ -17,13 +17,15 @@ from ..services.notification_decision_service import (
 from ..services.priority_queue_service import PriorityQueueService
 from ..services.webpush_service import WebPushService
 from ..services.analytics_db import AnalyticsDatabase
+from ..services.push_service import PushNotificationService
 
 # Import route initializers
 from .routes import (
     init_webpush_routes,
     init_template_routes,
     init_analytics_routes,
-    init_notification_routes
+    init_notification_routes,
+    init_push_routes
 )
 from .routes.auth import init_auth_routes, login_required
 from .routes.logs import init_logs_routes
@@ -92,6 +94,9 @@ def create_app():
     })
     print("✓ WebPush Service initialized")
     
+    push_service = PushNotificationService()
+    print("✓ Push Notification Service initialized")
+    
     # ============= Register Blueprints =============
     
     # Initialize and register auth routes
@@ -117,6 +122,10 @@ def create_app():
     # Initialize and register ML routes
     ml_bp = init_ml_routes(decision_service, analytics_db)
     app.register_blueprint(ml_bp)
+    
+    # Initialize and register push routes
+    push_bp = init_push_routes(push_service, analytics_db)
+    app.register_blueprint(push_bp)
     
     # Initialize and register notification routes
     notifications_bp = init_notification_routes(decision_service, queue_service)
@@ -248,6 +257,12 @@ if __name__ == '__main__':
     print("   POST   /api/v1/webpush/send-test      - Send test")
     print("   POST   /api/v1/webpush/send-with-template - Send with template")
     print()
+    print("� Push Notification Endpoints (FCM):")
+    print("   POST   /api/v1/push/send-test         - Send test push")
+    print("   POST   /api/v1/push/send-multicast    - Send to multiple devices")
+    print("   POST   /api/v1/push/subscribe-topic   - Subscribe to topic")
+    print("   GET    /api/v1/push/status            - Check FCM status")
+    print()
     print("📝 Template Endpoints:")
     print("   GET    /api/v1/templates              - List templates")
     print("   POST   /api/v1/templates              - Create template")
@@ -256,10 +271,13 @@ if __name__ == '__main__':
     print("   GET    /api/v1/analytics/summary      - Get analytics")
     print()
     print("🌐 Web Pages:")
-    print("   http://localhost:5000/                - Landing Page (System Overview)")
-    print("   http://localhost:5000/test            - Testing Center (WebPush, Email, SMS, Push)")
-    print("   http://localhost:5000/dashboard       - ML Dashboard (Analytics & Stats)")
-    print("   http://localhost:5000/templates       - Template Manager (CRUD)")
+    print("   http://localhost:5000/                - Landing Page")
+    print("   http://localhost:5000/test/webpush    - WebPush Testing")
+    print("   http://localhost:5000/test/push       - Push Notifications (iOS/Android)")
+    print("   http://localhost:5000/dashboard       - ML Dashboard")
+    print("   http://localhost:5000/templates       - Template Manager")
+    print("   http://localhost:5000/logs            - Notification Logs")
+    print("   http://localhost:5000/intelligence    - AI Intelligence Demo")
     print()
     print("=" * 70)
     print()
