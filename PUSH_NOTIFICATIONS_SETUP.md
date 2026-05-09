@@ -287,7 +287,7 @@ You'll see:
 
 ### 2. Open Test Page
 
-Navigate to: http://localhost:5000/test/push
+Navigate to: http://localhost:8080/test/push
 
 ### 3. Get Your Device Token
 

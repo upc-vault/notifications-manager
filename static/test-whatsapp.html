@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Notifications Test - Omega</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .navbar-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .navbar-links a {
+            color: #667eea;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .navbar-links a:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .status-ready { background: #d4edda; color: #155724; }
+        .status-demo { background: #fff3cd; color: #856404; }
+        .status-error { background: #f8d7da; color: #721c24; }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+        }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .alert-success { background: #d4edda; color: #155724; }
+        .alert-error { background: #f8d7da; color: #721c24; }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+        }
+
+        .info-box li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .cost-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .cost-table th, .cost-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .cost-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .help-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">Ω Omega</div>
+        <div class="navbar-links">
+            <a href="/">Dashboard</a>
+            <a href="/test-email">Email</a>
+            <a href="/test-sms">SMS</a>
+            <a href="/test-webpush">WebPush</a>
+            <a href="/test-push">Push</a>
+            <a href="/test-whatsapp">WhatsApp</a>
+            <a href="/ai-demo">AI Demo</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <h1>📱 WhatsApp Notifications Test</h1>
+            <p class="subtitle">Send test messages via WhatsApp Business API</p>
+
+            <div class="status-indicator" id="statusIndicator">
+                Checking service status...
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('send')">Send Message</button>
+                <button class="tab" onclick="switchTab('setup')">Setup Guide</button>
+                <button class="tab" onclick="switchTab('costs')">Costs</button>
+            </div>
+
+            <!-- Send Message Tab -->
+            <div class="tab-content active" id="sendTab">
+                <form id="whatsappForm">
+                    <div class="form-group">
+                        <label for="phoneNumber">Phone Number (with country code)</label>
+                        <input type="tel" id="phoneNumber" placeholder="+1234567890" required>
+                        <div class="help-text">
+                            Include country code (e.g., +1 for US, +34 for Spain, +44 for UK)
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" placeholder="Enter your message here..." required>Hello! This is a test message from Omega Notifications 🚀</textarea>
+                        <div class="help-text">
+                            Maximum 1600 characters. Note: Freeform messages only work within 24 hours of user interaction.
+                        </div>
+                    </div>
+
+                    <button type="submit" class="button" id="sendButton">
+                        Send WhatsApp Message
+                    </button>
+                </form>
+
+                <div id="alertBox"></div>
+
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-value" id="successCount">0</div>
+                        <div class="stat-label">Messages Sent</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="errorCount">0</div>
+                        <div class="stat-label">Errors</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Setup Guide Tab -->
+            <div class="tab-content" id="setupTab">
+                <div class="info-box">
+                    <h3>🚀 Quick Start (Demo Mode)</h3>
+                    <p>The system works in demo mode without any credentials - messages will be logged to the console.</p>
+                    <p>To send real WhatsApp messages, choose a provider and configure credentials:</p>
+                </div>
+
+                <h3 style="color: #667eea; margin-top: 30px; margin-bottom: 15px;">Provider Options</h3>
+
+                <!-- Twilio Setup -->
+                <div class="info-box">
+                    <h3>1️⃣ Twilio (Easiest Setup)</h3>
+                    <ul>
+                        <li><strong>Sign up:</strong> <a href="https://www.twilio.com/whatsapp" target="_blank">twilio.com/whatsapp</a></li>
+                        <li><strong>Get credentials:</strong> Account SID and Auth Token from console</li>
+                        <li><strong>WhatsApp number:</strong> Get a Twilio WhatsApp sender (starts with +14155238886 for testing)</li>
+                        <li><strong>Environment variables:</strong></li>
+                    </ul>
+                    <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; margin-top: 10px;"><code>WHATSAPP_PROVIDER=twilio
+TWILIO_ACCOUNT_SID=your_account_sid_here
+TWILIO_AUTH_TOKEN=your_auth_token_here
+TWILIO_WHATSAPP_NUMBER=+14155238886</code></pre>
+                    <p style="margin-top: 10px;"><strong>Testing:</strong> Twilio Sandbox allows free testing without business verification</p>
+                </div>
+
+                <!-- 360dialog Setup -->
+                <div class="info-box">
+                    <h3>2️⃣ 360dialog (Template-focused)</h3>
+                    <ul>
+                        <li><strong>Sign up:</strong> <a href="https://www.360dialog.com/" target="_blank">360dialog.com</a></li>
+                        <li><strong>Get API key:</strong> From 360dialog Hub</li>
+                        <li><strong>Create templates:</strong> Templates must be approved by WhatsApp before use</li>
+                        <li><strong>Environment variables:</strong></li>
+                    </ul>
+                    <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; margin-top: 10px;"><code>WHATSAPP_PROVIDER=360dialog
+DIALOG360_API_KEY=your_api_key_here
+DIALOG360_NAMESPACE=your_namespace_here</code></pre>
+                    <p style="margin-top: 10px;"><strong>Best for:</strong> Businesses needing approved message templates</p>
+                </div>
+
+                <!-- MessageBird Setup -->
+                <div class="info-box">
+                    <h3>3️⃣ MessageBird (Omnichannel)</h3>
+                    <ul>
+                        <li><strong>Sign up:</strong> <a href="https://www.messagebird.com/whatsapp" target="_blank">messagebird.com/whatsapp</a></li>
+                        <li><strong>Get API key:</strong> From MessageBird Dashboard</li>
+                        <li><strong>Create channel:</strong> WhatsApp Business channel in Dashboard</li>
+                        <li><strong>Environment variables:</strong></li>
+                    </ul>
+                    <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; margin-top: 10px;"><code>WHATSAPP_PROVIDER=messagebird
+MESSAGEBIRD_API_KEY=your_api_key_here
+MESSAGEBIRD_CHANNEL_ID=your_channel_id_here</code></pre>
+                    <p style="margin-top: 10px;"><strong>Best for:</strong> Multi-channel messaging (SMS + WhatsApp + more)</p>
+                </div>
+
+                <div class="info-box">
+                    <h3>📝 Business Verification</h3>
+                    <p>For production use, you need:</p>
+                    <ul>
+                        <li>WhatsApp Business Account (register via provider)</li>
+                        <li>Facebook Business Manager account</li>
+                        <li>Business verification by Meta (2-5 business days)</li>
+                        <li>Phone number verification (cannot be used with regular WhatsApp)</li>
+                        <li>Template approval for pre-written messages</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Costs Tab -->
+            <div class="tab-content" id="costsTab">
+                <div class="info-box">
+                    <h3>💰 Cost Breakdown</h3>
+                    <p>WhatsApp Business API is NOT free - here's what you need to budget:</p>
+                </div>
+
+                <h3 style="color: #667eea; margin-top: 20px; margin-bottom: 15px;">Provider Comparison</h3>
+                
+                <table class="cost-table">
+                    <thead>
+                        <tr>
+                            <th>Provider</th>
+                            <th>Monthly Minimum</th>
+                            <th>Per Message Cost</th>
+                            <th>Free Testing</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Twilio</strong></td>
+                            <td>~$0 (pay as you go)</td>
+                            <td>$0.005 - $0.068</td>
+                            <td>✅ Sandbox</td>
+                        </tr>
+                        <tr>
+                            <td><strong>360dialog</strong></td>
+                            <td>€25 - €50</td>
+                            <td>Per conversation</td>
+                            <td>❌</td>
+                        </tr>
+                        <tr>
+                            <td><strong>MessageBird</strong></td>
+                            <td>$25 - $50</td>
+                            <td>$0.01 - $0.05</td>
+                            <td>❌</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="info-box" style="margin-top: 20px;">
+                    <h3>📊 Message Pricing Details</h3>
+                    <p><strong>Business-initiated conversations:</strong> $0.033 - $0.068 per conversation (24-hour window)</p>
+                    <p><strong>User-initiated conversations:</strong> Free for first response, then charged</p>
+                    <p><strong>Template messages:</strong> Lower cost, but must be pre-approved</p>
+                    <p><strong>Marketing messages:</strong> Higher cost (~$0.05-0.10 per message)</p>
+                </div>
+
+                <div class="info-box">
+                    <h3>💡 Cost Optimization Tips</h3>
+                    <ul>
+                        <li><strong>Use templates:</strong> Template messages cost less than freeform</li>
+                        <li><strong>24-hour window:</strong> Multiple messages within 24 hours = one conversation charge</li>
+                        <li><strong>User-initiated:</strong> Respond to user messages for lower costs</li>
+                        <li><strong>Twilio Sandbox:</strong> Free for testing before going live</li>
+                        <li><strong>Alternative:</strong> Use WebPush (FREE) or Email (FREE) for notifications</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h3>🆓 Free Alternatives</h3>
+                    <p>If WhatsApp costs are too high, consider these FREE notification channels:</p>
+                    <ul>
+                        <li><strong>WebPush:</strong> Browser push notifications (100% free, works on all devices)</li>
+                        <li><strong>Email:</strong> Free tier with SendGrid, AWS SES, Mailgun</li>
+                        <li><strong>Android Push:</strong> Firebase Cloud Messaging (free, no subscription)</li>
+                    </ul>
+                    <p style="margin-top: 10px; font-weight: 600;">💰 Budget recommendation: Start with free channels, add WhatsApp when revenue justifies cost</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let successCount = 0;
+        let errorCount = 0;
+
+        // Check service status on load
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/v1/whatsapp/status');
+                const data = await response.json();
+                
+                const indicator = document.getElementById('statusIndicator');
+                
+                if (data.provider === 'demo') {
+                    indicator.className = 'status-indicator status-demo';
+                    indicator.textContent = '⚠️ Demo Mode - Messages will be logged, not sent';
+                } else if (data.ready) {
+                    indicator.className = 'status-indicator status-ready';
+                    indicator.textContent = `✅ Ready - Using ${data.provider}`;
+                } else {
+                    indicator.className = 'status-indicator status-error';
+                    indicator.textContent = '❌ Error - Check configuration';
+                }
+            } catch (error) {
+                const indicator = document.getElementById('statusIndicator');
+                indicator.className = 'status-indicator status-error';
+                indicator.textContent = '❌ Service Unavailable';
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('whatsappForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const message = document.getElementById('message').value;
+            const button = document.getElementById('sendButton');
+            const alertBox = document.getElementById('alertBox');
+            
+            button.disabled = true;
+            button.textContent = 'Sending...';
+            alertBox.innerHTML = '';
+            
+            try {
+                const response = await fetch('/api/v1/whatsapp/send-test', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        phone_number: phoneNumber,
+                        message: message
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    successCount++;
+                    document.getElementById('successCount').textContent = successCount;
+                    
+                    let message = '✅ WhatsApp message sent successfully!';
+                    if (data.demo) {
+                        message += ' (Demo Mode - check console logs)';
+                    } else if (data.message_id) {
+                        message += ` Message ID: ${data.message_id}`;
+                    }
+                    
+                    alertBox.innerHTML = `<div class="alert alert-success">${message}</div>`;
+                } else {
+                    errorCount++;
+                    document.getElementById('errorCount').textContent = errorCount;
+                    alertBox.innerHTML = `<div class="alert alert-error">❌ Error: ${data.error || 'Unknown error'}</div>`;
+                }
+            } catch (error) {
+                errorCount++;
+                document.getElementById('errorCount').textContent = errorCount;
+                alertBox.innerHTML = `<div class="alert alert-error">❌ Network error: ${error.message}</div>`;
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Send WhatsApp Message';
+            }
+        });
+
+        // Tab switching
+        function switchTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tab + 'Tab').classList.add('active');
+        }
+
+        // Initialize
+        checkStatus();
+    </script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Omega Push Test</string>
+    <string name="default_notification_channel_id">omega_notifications</string>
+</resources>

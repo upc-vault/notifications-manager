@@ -30,7 +30,7 @@ async def main():
     
     # Configuration
     config = {
-        'api_base_url': os.getenv('API_BASE_URL', 'http://localhost:5000'),
+        'api_base_url': os.getenv('API_BASE_URL', 'http://localhost:8080'),
         'poll_interval': float(os.getenv('ESB_POLL_INTERVAL', '2.0')),
         'batch_size': int(os.getenv('ESB_BATCH_SIZE', '10')),
         'esb': {

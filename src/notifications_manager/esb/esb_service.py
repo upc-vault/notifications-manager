@@ -38,7 +38,7 @@ class ESBService:
         self.config = config
         self.providers: Dict[str, NotificationProvider] = {}
         self.message_broker = MessageBroker(config.get('redis', {}))
-        self.api_base_url = config.get('api_base_url', 'http://localhost:5000')
+        self.api_base_url = config.get('api_base_url', 'http://localhost:8080')
         
         # Metrics
         self.metrics = {

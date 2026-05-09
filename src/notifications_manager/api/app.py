@@ -18,6 +18,7 @@ from ..services.priority_queue_service import PriorityQueueService
 from ..services.webpush_service import WebPushService
 from ..services.analytics_db import AnalyticsDatabase
 from ..services.push_service import PushNotificationService
+from ..services.whatsapp_service import WhatsAppService
 
 # Import route initializers
 from .routes import (
@@ -27,6 +28,7 @@ from .routes import (
     init_notification_routes,
     init_push_routes
 )
+from .routes.whatsapp import init_whatsapp_routes
 from .routes.auth import init_auth_routes, login_required
 from .routes.logs import init_logs_routes
 from .routes.ml import init_ml_routes
@@ -97,6 +99,9 @@ def create_app():
     push_service = PushNotificationService()
     print("✓ Push Notification Service initialized")
     
+    whatsapp_service = WhatsAppService()
+    print("✓ WhatsApp Service initialized")
+    
     # ============= Register Blueprints =============
     
     # Initialize and register auth routes
@@ -126,6 +131,10 @@ def create_app():
     # Initialize and register push routes
     push_bp = init_push_routes(push_service, analytics_db)
     app.register_blueprint(push_bp)
+    
+    # Initialize and register whatsapp routes
+    whatsapp_bp = init_whatsapp_routes(whatsapp_service, analytics_db)
+    app.register_blueprint(whatsapp_bp)
     
     # Initialize and register notification routes
     notifications_bp = init_notification_routes(decision_service, queue_service)
@@ -198,6 +207,12 @@ def create_app():
         """Serve the Push testing page (protected)"""
         return send_from_directory(static_folder, 'test-push.html')
     
+    @app.route('/test-whatsapp')
+    @login_required
+    def serve_test_whatsapp():
+        """Serve the WhatsApp testing page (protected)"""
+        return send_from_directory(static_folder, 'test-whatsapp.html')
+    
     @app.route('/dashboard')
     @login_required
     def serve_dashboard():
@@ -263,6 +278,11 @@ if __name__ == '__main__':
     print("   POST   /api/v1/push/subscribe-topic   - Subscribe to topic")
     print("   GET    /api/v1/push/status            - Check FCM status")
     print()
+    print("💬 WhatsApp Endpoints:")
+    print("   POST   /api/v1/whatsapp/send-test     - Send test WhatsApp")
+    print("   POST   /api/v1/whatsapp/send-template - Send template message")
+    print("   GET    /api/v1/whatsapp/status        - Check WhatsApp status")
+    print()
     print("📝 Template Endpoints:")
     print("   GET    /api/v1/templates              - List templates")
     print("   POST   /api/v1/templates              - Create template")
@@ -271,19 +291,20 @@ if __name__ == '__main__':
     print("   GET    /api/v1/analytics/summary      - Get analytics")
     print()
     print("🌐 Web Pages:")
-    print("   http://localhost:5000/                - Landing Page")
-    print("   http://localhost:5000/test/webpush    - WebPush Testing")
-    print("   http://localhost:5000/test/push       - Push Notifications (iOS/Android)")
-    print("   http://localhost:5000/dashboard       - ML Dashboard")
-    print("   http://localhost:5000/templates       - Template Manager")
-    print("   http://localhost:5000/logs            - Notification Logs")
-    print("   http://localhost:5000/intelligence    - AI Intelligence Demo")
+    print("   http://localhost:8080/                - Landing Page")
+    print("   http://localhost:8080/test/webpush    - WebPush Testing")
+    print("   http://localhost:8080/test/push       - Push Notifications (iOS/Android)")
+    print("   http://localhost:8080/test-whatsapp   - WhatsApp Testing")
+    print("   http://localhost:8080/dashboard       - ML Dashboard")
+    print("   http://localhost:8080/templates       - Template Manager")
+    print("   http://localhost:8080/logs            - Notification Logs")
+    print("   http://localhost:8080/intelligence    - AI Intelligence Demo")
     print()
     print("=" * 70)
     print()
     
     app.run(
         host='0.0.0.0',
-        port=5000,
+        port=8080,
         debug=True
     )

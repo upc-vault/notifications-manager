@@ -118,9 +118,9 @@ python scripts/start_api.py
 
 ### Verify Everything Works
 
-1. ✅ Main page: http://localhost:5000
-2. ✅ Dashboard: http://localhost:5000/dashboard
-3. ✅ Templates: http://localhost:5000/templates
+1. ✅ Main page: http://localhost:8080
+2. ✅ Dashboard: http://localhost:8080/dashboard
+3. ✅ Templates: http://localhost:8080/templates
 4. ✅ API: All endpoints functional
 5. ✅ WebPush: Subscribe and send notifications
 6. ✅ ML: Dashboard shows statistics

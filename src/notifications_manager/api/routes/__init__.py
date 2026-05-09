@@ -6,6 +6,7 @@ from .templates import templates_bp, init_template_routes
 from .analytics import analytics_bp, init_analytics_routes
 from .notifications import notifications_bp, init_notification_routes
 from .push import init_push_routes
+from .whatsapp import init_whatsapp_routes
 
 __all__ = [
     'webpush_bp',
@@ -16,5 +17,6 @@ __all__ = [
     'init_template_routes',
     'init_analytics_routes',
     'init_notification_routes',
-    'init_push_routes'
+    'init_push_routes',
+    'init_whatsapp_routes'
 ]

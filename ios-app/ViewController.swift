@@ -114,7 +114,7 @@ class ViewController: UIViewController {
         label.text = """
         Instructions:
         1. Copy your FCM token above
-        2. Go to http://localhost:5000/test/push
+        2. Go to http://localhost:8080/test/push
         3. Paste token and send test notification
         4. Check your device for the notification!
         """
@@ -311,7 +311,7 @@ class ViewController: UIViewController {
         // Show alert
         let alert = UIAlertController(
             title: "✅ Token Copied!",
-            message: "Your FCM token has been copied to clipboard.\n\nNow paste it in the web interface at:\nhttp://localhost:5000/test/push",
+            message: "Your FCM token has been copied to clipboard.\n\nNow paste it in the web interface at:\nhttp://localhost:8080/test/push",
             preferredStyle: .alert
         )
         

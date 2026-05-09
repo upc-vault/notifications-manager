@@ -10,7 +10,7 @@ python scripts/start_api.py
 ### Step 2: Open the Demo Page
 Open your browser and navigate to:
 ```
-http://localhost:5000/
+http://localhost:8080/
 ```
 
 ### Step 3: Subscribe to Notifications
@@ -50,7 +50,7 @@ Click "🧪 Send Test Notification" to receive a test browser notification
 To send notifications using ML-selected templates:
 
 ```powershell
-irm http://localhost:5000/api/v1/notifications -Method POST -ContentType "application/json" -Body '{"user_id":"user_abc123","notification_type":"transaction_alert","message":"Transaction of $500 detected","user_segment":"premium","time_of_day":"morning"}'
+irm http://localhost:8080/api/v1/notifications -Method POST -ContentType "application/json" -Body '{"user_id":"user_abc123","notification_type":"transaction_alert","message":"Transaction of $500 detected","user_segment":"premium","time_of_day":"morning"}'
 ```
 
 Then start the ESB to deliver via WebPush:
@@ -61,23 +61,23 @@ python scripts/start_esb.py
 ## 📊 View Statistics
 
 ```powershell
-irm http://localhost:5000/api/v1/webpush/stats
+irm http://localhost:8080/api/v1/webpush/stats
 ```
 
 ## ⚡ Quick Test Commands
 
 ```powershell
 # Health check
-irm http://localhost:5000/health
+irm http://localhost:8080/health
 
 # Subscribe (from JavaScript)
 # See index.html for full implementation
 
 # Send test notification
-irm http://localhost:5000/api/v1/webpush/send-test -Method POST -ContentType "application/json" -Body '{"user_id":"user_abc123"}'
+irm http://localhost:8080/api/v1/webpush/send-test -Method POST -ContentType "application/json" -Body '{"user_id":"user_abc123"}'
 
 # View stats
-irm http://localhost:5000/api/v1/webpush/stats
+irm http://localhost:8080/api/v1/webpush/stats
 ```
 
 ## 🎯 MVP Complete!

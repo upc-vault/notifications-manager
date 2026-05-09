@@ -174,7 +174,7 @@ fL8Xj2kPQS6xY3mK9vH4bN7pT0wR1dC5aF6hG8iJ...
 - Or copy it from Xcode console
 
 ### 8.2 Send Test Notification
-1. Open browser: http://localhost:5000/test/push
+1. Open browser: http://localhost:8080/test/push
 2. Paste the FCM token
 3. Enter title and message
 4. Click "📤 Send Test Notification"

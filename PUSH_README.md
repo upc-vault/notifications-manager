@@ -31,7 +31,7 @@
 ```
 
 ### 3. Open Test Page
-Navigate to: http://localhost:5000/test/push
+Navigate to: http://localhost:8080/test/push
 
 ### 4. Choose Your Path
 
@@ -78,7 +78,7 @@ config/
 
 ### Send Test Notification
 ```bash
-curl -X POST http://localhost:5000/api/v1/push/send-test \
+curl -X POST http://localhost:8080/api/v1/push/send-test \
   -H "Content-Type: application/json" \
   -d '{
     "token": "device-fcm-token",
@@ -91,7 +91,7 @@ curl -X POST http://localhost:5000/api/v1/push/send-test \
 
 ### Check Status
 ```bash
-curl http://localhost:5000/api/v1/push/status
+curl http://localhost:8080/api/v1/push/status
 ```
 
 Response:
@@ -117,7 +117,7 @@ Follow **[IOS_QUICKSTART.md](IOS_QUICKSTART.md)** - it has complete copy-paste c
 - Check Xcode console or tap "Copy Token" button
 
 ### 3. Test in Web Interface
-- Paste token in http://localhost:5000/test/push
+- Paste token in http://localhost:8080/test/push
 - Click "Send Test Notification"
 - See it on your iPhone! 🎉
 
@@ -207,7 +207,7 @@ export FIREBASE_CREDENTIALS_PATH=/path/to/firebase-credentials.json
 ## 🎯 Next Steps
 
 ### For Testing Right Now
-1. Open http://localhost:5000/test/push
+1. Open http://localhost:8080/test/push
 2. Try demo mode (no setup needed)
 3. See simulated notifications work
 

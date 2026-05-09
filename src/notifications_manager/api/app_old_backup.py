@@ -720,7 +720,7 @@ if __name__ == '__main__':
     print("🚀 Notifications Manager API + WebPush MVP")
     print("="*60)
     print("🌐 WebPush Demo:")
-    print("  http://localhost:5000/                - Demo page")
+    print("  http://localhost:8080/                - Demo page")
     print()
     print("📡 API Endpoints:")
     print("  POST   /api/v1/notifications          - Create notification")
@@ -741,6 +741,6 @@ if __name__ == '__main__':
     
     app.run(
         host='0.0.0.0',
-        port=5000,
+        port=8080,
         debug=True
     )

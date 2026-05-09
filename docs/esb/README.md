@@ -88,7 +88,7 @@ Channel-specific adapters:
 
 ```bash
 # API Configuration
-API_BASE_URL=http://localhost:5000
+API_BASE_URL=http://localhost:8080
 
 # ESB Configuration
 ESB_POLL_INTERVAL=2.0
@@ -148,7 +148,7 @@ python scripts/start_esb.py
 
 **Terminal 3 - Test notifications:**
 ```bash
-irm http://localhost:5000/api/v1/notifications -Method POST -ContentType "application/json" -Body '{"user_id":"user123","notification_type":"transaction_alert","message":"Transaction of $500 detected","user_segment":"premium"}'
+irm http://localhost:8080/api/v1/notifications -Method POST -ContentType "application/json" -Body '{"user_id":"user123","notification_type":"transaction_alert","message":"Transaction of $500 detected","user_segment":"premium"}'
 ```
 
 ## Features
@@ -182,7 +182,7 @@ irm http://localhost:5000/api/v1/notifications -Method POST -ContentType "applic
 ## Metrics Endpoint
 
 ```bash
-GET http://localhost:5000/api/v1/esb/metrics
+GET http://localhost:8080/api/v1/esb/metrics
 ```
 
 Response:
@@ -275,7 +275,7 @@ Currently, all providers run in **demo mode**:
 ## Troubleshooting
 
 **ESB not processing notifications:**
-- Check API is running: `curl http://localhost:5000/health`
+- Check API is running: `curl http://localhost:8080/health`
 - Check Redis is running: `redis-cli ping`
 - Check ESB logs: `logs/esb.log`
 

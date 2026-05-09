@@ -31,9 +31,9 @@ if __name__ == '__main__':
     print("   GET    /api/v1/models/stats           - ML statistics")
     print()
     print("🌐 Web Pages:")
-    print("   http://localhost:5000/                - WebPush Demo")
-    print("   http://localhost:5000/dashboard       - ML Dashboard")
-    print("   http://localhost:5000/templates       - Template Manager")
+    print("   http://localhost:8080/                - WebPush Demo")
+    print("   http://localhost:8080/dashboard       - ML Dashboard")
+    print("   http://localhost:8080/templates       - Template Manager")
     print()
     print("💡 Environment: " + os.getenv('FLASK_ENV', 'development'))
     print("="*70)
@@ -41,6 +41,6 @@ if __name__ == '__main__':
     
     app.run(
         host='0.0.0.0',
-        port=5000,
+        port=8080,
         debug=True
     )

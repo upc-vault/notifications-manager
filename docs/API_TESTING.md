@@ -32,13 +32,13 @@ cd src
 python -m notifications_manager.api.app
 ```
 
-API will be available at: `http://localhost:5000`
+API will be available at: `http://localhost:8080`
 
 ## API Endpoints
 
 ### 1. Health Check
 ```bash
-GET http://localhost:5000/health
+GET http://localhost:8080/health
 ```
 
 Response:
@@ -53,7 +53,7 @@ Response:
 
 ### 2. Create Notification (ML Decision + Queue)
 ```bash
-POST http://localhost:5000/api/v1/notifications
+POST http://localhost:8080/api/v1/notifications
 Content-Type: application/json
 
 {
@@ -85,7 +85,7 @@ Response:
 
 ### 3. View Queue Status
 ```bash
-GET http://localhost:5000/api/v1/queue
+GET http://localhost:8080/api/v1/queue
 ```
 
 Response:
@@ -107,7 +107,7 @@ Response:
 
 ### 4. Dequeue Notifications
 ```bash
-POST http://localhost:5000/api/v1/queue/dequeue?count=5
+POST http://localhost:8080/api/v1/queue/dequeue?count=5
 ```
 
 Response:
@@ -134,7 +134,7 @@ Response:
 
 ### 5. Submit Feedback (Update ML Models)
 ```bash
-POST http://localhost:5000/api/v1/feedback
+POST http://localhost:8080/api/v1/feedback
 Content-Type: application/json
 
 {
@@ -148,14 +148,14 @@ Content-Type: application/json
 
 ### 6. View ML Model Statistics
 ```bash
-GET http://localhost:5000/api/v1/models/stats
+GET http://localhost:8080/api/v1/models/stats
 ```
 
 ## Testing Scenarios
 
 ### Scenario 1: Critical Security Alert
 ```bash
-curl -X POST http://localhost:5000/api/v1/notifications \
+curl -X POST http://localhost:8080/api/v1/notifications \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": "user456",
@@ -170,7 +170,7 @@ Expected: Priority=CRITICAL, Template=URGENT, Channel=SMS or WhatsApp
 
 ### Scenario 2: Promotional Offer
 ```bash
-curl -X POST http://localhost:5000/api/v1/notifications \
+curl -X POST http://localhost:8080/api/v1/notifications \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": "user789",
@@ -185,7 +185,7 @@ Expected: Priority=LOW, Template=PROMOTIONAL/FRIENDLY, Channel=WhatsApp
 
 ### Scenario 3: Transaction Alert
 ```bash
-curl -X POST http://localhost:5000/api/v1/notifications \
+curl -X POST http://localhost:8080/api/v1/notifications \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": "user101",
@@ -202,12 +202,12 @@ Expected: Priority=HIGH, Template=CONCISE/URGENT, Channel=WhatsApp/Push
 ## Testing Flow
 
 1. **Start API**: `python scripts/start_api.py`
-2. **Check health**: `curl http://localhost:5000/health`
+2. **Check health**: `curl http://localhost:8080/health`
 3. **Create notifications**: Use scenarios above
-4. **Check queue**: `curl http://localhost:5000/api/v1/queue`
-5. **Dequeue**: `curl -X POST http://localhost:5000/api/v1/queue/dequeue?count=3`
+4. **Check queue**: `curl http://localhost:8080/api/v1/queue`
+5. **Dequeue**: `curl -X POST http://localhost:8080/api/v1/queue/dequeue?count=3`
 6. **Submit feedback**: Update models with results
-7. **View stats**: `curl http://localhost:5000/api/v1/models/stats`
+7. **View stats**: `curl http://localhost:8080/api/v1/models/stats`
 
 ## Notes
 
@@ -226,4 +226,4 @@ Expected: Priority=HIGH, Template=CONCISE/URGENT, Channel=WhatsApp/Push
 - To use Redis: Start Redis server or Docker container
 
 **Port already in use**:
-- Change port in `.env` file or kill process using port 5000
+- Change port in `.env` file or kill process using port 8080

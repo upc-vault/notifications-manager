@@ -200,7 +200,7 @@ class ViewController: UIViewController {
         label.textColor = .secondaryLabel
         label.text = """
         1. Copy your FCM token
-        2. Go to http://localhost:5000/test/push
+        2. Go to http://localhost:8080/test/push
         3. Paste token and send test notification
         """
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -285,7 +285,7 @@ class ViewController: UIViewController {
         
         let alert = UIAlertController(
             title: "✅ Token Copied!",
-            message: "Your FCM token has been copied to clipboard.\n\nNow paste it in the web interface at:\nhttp://localhost:5000/test/push",
+            message: "Your FCM token has been copied to clipboard.\n\nNow paste it in the web interface at:\nhttp://localhost:8080/test/push",
             preferredStyle: .alert
         )
         
@@ -339,7 +339,7 @@ Or just tap the "Copy Token" button in the app!
 ### 9. Test Notification
 
 1. Copy your FCM token from the app
-2. Open http://localhost:5000/test/push
+2. Open http://localhost:8080/test/push
 3. Paste the token
 4. Click "Send Test Notification"
 5. 🎉 You should receive a notification on your iPhone!
@@ -388,7 +388,7 @@ Since you have an iPhone:
 3. **Follow steps 2-7** above (takes ~10 minutes)
 4. **Run on your iPhone**
 5. **Copy token** from console or tap "Copy Token" button
-6. **Paste in web interface** at http://localhost:5000/test/push
+6. **Paste in web interface** at http://localhost:8080/test/push
 7. **Send test notification**
 8. **See it on your lock screen!** 🎉
 

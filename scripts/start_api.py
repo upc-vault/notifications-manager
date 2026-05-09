@@ -25,10 +25,10 @@ if __name__ == '__main__':
     print("   GET    /api/v1/models/stats           - ML statistics")
     print()
     print("🌐 Web Pages:")
-    print("   http://localhost:5000/                - Landing Page (System Overview)")
-    print("   http://localhost:5000/test            - Testing Center (WebPush, Email, SMS, Push)")
-    print("   http://localhost:5000/dashboard       - ML Dashboard (Analytics & Stats)")
-    print("   http://localhost:5000/templates       - Template Manager (CRUD)")
+    print("   http://localhost:8080/                - Landing Page (System Overview)")
+    print("   http://localhost:8080/test            - Testing Center (WebPush, Email, SMS, Push)")
+    print("   http://localhost:8080/dashboard       - ML Dashboard (Analytics & Stats)")
+    print("   http://localhost:8080/templates       - Template Manager (CRUD)")
     print()
     print("💡 Environment: development")
     print("="*70)
@@ -36,6 +36,6 @@ if __name__ == '__main__':
     
     app.run(
         host='0.0.0.0',
-        port=5000,
+        port=8080,
         debug=True
     )

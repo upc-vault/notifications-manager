@@ -87,7 +87,7 @@ self.addEventListener('notificationclick', event => {
 
     event.waitUntil(
         // Send click feedback to API
-        fetch('http://localhost:5000/api/v1/webpush/track-click', {
+        fetch('http://localhost:8080/api/v1/webpush/track-click', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

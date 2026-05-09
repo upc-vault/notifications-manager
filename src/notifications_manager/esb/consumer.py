@@ -24,7 +24,7 @@ class ESBConsumer:
     def __init__(self, config: dict):
         self.config = config
         self.esb_service = ESBService(config.get('esb', {}))
-        self.api_base_url = config.get('api_base_url', 'http://localhost:5000')
+        self.api_base_url = config.get('api_base_url', 'http://localhost:8080')
         self.poll_interval = config.get('poll_interval', 2.0)
         self.batch_size = config.get('batch_size', 10)
         self.running = False
@@ -136,7 +136,7 @@ async def main():
     """Main entry point for ESB consumer"""
     # Load configuration
     config = {
-        'api_base_url': 'http://localhost:5000',
+        'api_base_url': 'http://localhost:8080',
         'poll_interval': 2.0,
         'batch_size': 10,
         'esb': {

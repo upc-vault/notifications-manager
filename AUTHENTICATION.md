@@ -190,9 +190,9 @@ class User(db.Model):
 ```
 
 ### 2. Test Public Access
-- Visit http://localhost:5000 (landing page - accessible)
-- Try http://localhost:5000/test (redirects to login)
-- Try http://localhost:5000/dashboard (redirects to login)
+- Visit http://localhost:8080 (landing page - accessible)
+- Try http://localhost:8080/test (redirects to login)
+- Try http://localhost:8080/dashboard (redirects to login)
 
 ### 3. Test Login
 - Click "Admin Login" button
