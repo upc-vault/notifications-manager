@@ -170,14 +170,15 @@
     <div class="login-container">
         <div class="logo-section">
             <div class="logo-icon">🔐</div>
-            <h1>Omega Admin Login</h1>
+            <h1>Omega Login</h1>
             <p>Access the Omega Notification System</p>
         </div>
 
         <div class="demo-info">
-            <h3>Demo Credentials:</h3>
+            <h3>Demo Admin Credentials:</h3>
             <p><strong>Username:</strong> admin</p>
             <p><strong>Password:</strong> admin123</p>
+            <p style="margin-top: 10px;">Or <a href="/register" style="color: #0c5460; font-weight: bold;">create a new account</a></p>
         </div>
 
         <div id="alert" class="alert"></div>
@@ -233,6 +234,11 @@
                 if (data.success) {
                     // Token is automatically stored in httpOnly cookie by backend
                     showAlert('Login successful! Redirecting...', 'success');
+                    
+                    // Store role for client-side navigation
+                    localStorage.setItem('userRole', data.role);
+                    localStorage.setItem('username', data.username);
+                    
                     setTimeout(() => {
                         window.location.href = '/admin';
                     }, 1000);

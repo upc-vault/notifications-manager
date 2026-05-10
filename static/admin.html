@@ -107,15 +107,17 @@
                     <a href="#" class="dropdown-toggle">Test ▼</a>
                     <ul class="dropdown-menu">
                         <li><a href="/test/webpush">WebPush</a></li>
-                        <li><a href="/test/email">Email</a></li>
-                        <li><a href="/test/sms">SMS</a></li>
+                        <li><a href="/test-email">Email</a></li>
+                        <li><a href="/test-sms">SMS</a></li>
                         <li><a href="/test/push">Push</a></li>
+                        <li><a href="/test-whatsapp">WhatsApp</a></li>
                     </ul>
                 </li>
-                <li><a href="/dashboard">Dashboard</a></li>
-                <li><a href="/templates">Templates</a></li>
-                <li><a href="/logs">Logs</a></li>
                 <li><a href="/intelligence">AI Demo</a></li>
+                <li class="admin-only"><a href="/dashboard">Dashboard</a></li>
+                <li class="admin-only"><a href="/templates">Templates</a></li>
+                <li class="admin-only"><a href="/logs">Logs</a></li>
+                <li class="admin-only"><a href="/users">Users</a></li>
                 <li class="user-section">
                     <div class="user-avatar" id="user-avatar">A</div>
                     <span class="user-name" id="user-name">Admin</span>
@@ -173,13 +175,30 @@
                     window.location.href = '/login';
                 } else {
                     const username = data.username || 'Admin';
+                    const role = data.role || 'user';
+                    
                     document.getElementById('user-name').textContent = username;
                     document.getElementById('user-avatar').textContent = username.charAt(0).toUpperCase();
+                    
+                    // Store role for navigation
+                    localStorage.setItem('userRole', role);
+                    localStorage.setItem('username', username);
+                    
+                    // Show/hide admin links based on role
+                    updateNavigation(role);
                 }
             } catch (error) {
                 console.error('Auth check failed:', error);
                 window.location.href = '/login';
             }
+        }
+        
+        // Update navigation based on role
+        function updateNavigation(role) {
+            const adminLinks = document.querySelectorAll('.admin-only');
+            adminLinks.forEach(link => {
+                link.style.display = role === 'admin' ? 'inline-block' : 'none';
+            });
         }
 
         // Logout function
@@ -187,9 +206,11 @@
             e.preventDefault();
             try {
                 await fetch('/api/v1/auth/logout', { method: 'POST' });
+                localStorage.clear();
                 window.location.href = '/';
             } catch (error) {
                 console.error('Logout failed:', error);
+                localStorage.clear();
                 window.location.href = '/';
             }
         });

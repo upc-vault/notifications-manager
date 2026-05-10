@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Omega</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .register-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 450px;
+            width: 100%;
+            padding: 50px 40px;
+        }
+        .logo-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .logo-icon {
+            font-size: 64px;
+            margin-bottom: 10px;
+        }
+        h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #666;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .info-box {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 13px;
+            color: #004085;
+        }
+        .back-link {
+            text-align: center;
+            margin-top: 25px;
+        }
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="logo-section">
+            <div class="logo-icon">📝</div>
+            <h1>Create Account</h1>
+            <p>Register for Omega Notification System</p>
+        </div>
+
+        <div class="info-box">
+            <strong>New users receive "User" role by default:</strong>
+            <ul style="margin-top: 8px; margin-left: 20px;">
+                <li>Test templates and channels</li>
+                <li>Register notifications</li>
+                <li>View your activity</li>
+            </ul>
+            <p style="margin-top: 8px;">Admins can upgrade your role later.</p>
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <form id="register-form">
+            <div class="form-group">
+                <label for="username">Username *</label>
+                <input type="text" id="username" placeholder="At least 3 characters" required minlength="3">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email (optional)</label>
+                <input type="email" id="email" placeholder="your@email.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password *</label>
+                <input type="password" id="password" placeholder="At least 6 characters" required minlength="6">
+            </div>
+
+            <div class="form-group">
+                <label for="confirm-password">Confirm Password *</label>
+                <input type="password" id="confirm-password" placeholder="Re-enter password" required>
+            </div>
+
+            <button type="submit" class="btn" id="register-btn">Create Account</button>
+        </form>
+
+        <div class="back-link">
+            <a href="/login">← Already have an account? Login</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('register-form');
+        const alertDiv = document.getElementById('alert');
+        const btn = document.getElementById('register-btn');
+
+        function showAlert(message, type) {
+            alertDiv.textContent = message;
+            alertDiv.className = `alert ${type}`;
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            if (password !== confirmPassword) {
+                showAlert('Passwords do not match', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Creating account...';
+
+            try {
+                const response = await fetch('/api/v1/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, email })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('Registration successful! Redirecting to login...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                } else {
+                    showAlert(data.error || 'Registration failed', 'error');
+                    btn.disabled = false;
+                    btn.textContent = 'Create Account';
+                }
+            } catch (error) {
+                showAlert('Registration failed. Please try again.', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Create Account';
+            }
+        });
+    </script>
+</body>
+</html>

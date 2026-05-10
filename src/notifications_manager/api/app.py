@@ -170,11 +170,22 @@ def create_app():
         """Serve the login page"""
         return send_from_directory(static_folder, 'login.html')
     
+    @app.route('/register')
+    def serve_register():
+        """Serve the registration page"""
+        return send_from_directory(static_folder, 'register.html')
+    
     @app.route('/admin')
     @login_required
     def serve_admin():
         """Serve the admin dashboard (protected)"""
         return send_from_directory(static_folder, 'admin.html')
+    
+    @app.route('/users')
+    @login_required
+    def serve_users():
+        """Serve the user management page (admin only)"""
+        return send_from_directory(static_folder, 'users.html')
     
     @app.route('/test')
     @login_required
