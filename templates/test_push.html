@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block title %}Mobile Push Testing - Notification Manager{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="d-flex align-items-center mb-4">
+                <a href="/dashboard" class="btn btn-outline-secondary me-3">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <div>
+                    <h1 class="mb-0">
+                        <i class="bi bi-phone text-warning"></i> Mobile Push Testing
+                    </h1>
+                    <p class="text-muted mb-0">Test mobile push notifications (Firebase/APNs)</p>
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> <strong>Real Push Provider:</strong> This sends real push notifications via Firebase Cloud Messaging to Android and iOS devices. You need a valid FCM device token to receive notifications.
+            </div>
+
+            <div class="card dashboard-card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-send"></i> Send Mobile Push Notification
+                </div>
+                <div class="card-body">
+                    <form id="push-form">
+                        <!-- Mode Selector -->
+                        <div class="mb-3">
+                            <label class="form-label">Notification Mode</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="notif-mode" id="mode-template" value="template" checked>
+                                <label class="btn btn-outline-primary" for="mode-template">
+                                    <i class="bi bi-file-earmark-text"></i> Use Template
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="notif-mode" id="mode-manual" value="manual">
+                                <label class="btn btn-outline-primary" for="mode-manual">
+                                    <i class="bi bi-pencil"></i> Manual Input
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Device Token</label>
+                            <input type="text" class="form-control" id="device-token" value="" required placeholder="Enter FCM device token">
+                            <small class="form-text text-muted">Get this from your Android/iOS app (152 characters)</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Platform</label>
+                            <select class="form-select" id="platform">
+                                <option value="android">Android (Firebase)</option>
+                                <option value="ios">iOS (APNs)</option>
+                            </select>
+                        </div>
+
+                        <!-- Template Selector -->
+                        <div id="template-section">
+                            <div class="mb-3">
+                                <label class="form-label">Select Template</label>
+                                <select class="form-select" id="template-select">
+                                    <option value="">Loading templates...</option>
+                                </select>
+                                <small class="form-text text-muted">
+                                    <a href="/templates" target="_blank">Manage templates</a>
+                                </small>
+                            </div>
+                            
+                            <!-- Variable Inputs (dynamically generated) -->
+                            <div id="template-variables-container"></div>
+                        </div>
+
+                        <!-- Manual Input Fields -->
+                        <div id="manual-section" style="display:none;">
+                            <div class="mb-3">
+                                <label class="form-label">Title</label>
+                                <input type="text" class="form-control" id="notif-title" value="BBVA Transaction Alert" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Message</label>
+                                <textarea class="form-control" id="notif-body" rows="3" required>You have received $500.00 from John Doe</textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Badge Count</label>
+                                    <input type="number" class="form-control" id="badge" value="1" min="0">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Sound</label>
+                                    <select class="form-select" id="sound">
+                                        <option value="default">Default</option>
+                                        <option value="custom">Custom</option>
+                                        <option value="none">None</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-gradient-success w-100">
+                            <i class="bi bi-send"></i> Send Mobile Push
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card dashboard-card">
+                <div class="card-header">
+                    <i class="bi bi-graph-up"></i> Test Results
+                </div>
+                <div class="card-body">
+                    <div id="results" class="text-muted text-center py-4">
+                        No tests run yet
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!auth.requireAuth()) { return; }
+
+let selectedMode = 'template';
+let templates = [];
+let selectedTemplate = null;
+
+// Load templates
+async function loadTemplates() {
+    try {
+        const response = await auth.apiRequest('/api/v1/templates?channel=push');
+        const data = await response.json();
+        templates = data.templates;
+        
+        const select = document.getElementById('template-select');
+        select.innerHTML = '<option value="">-- Select a Template --</option>';
+        
+        templates.forEach(template => {
+            const option = document.createElement('option');
+            option.value = template.id;
+            option.textContent = `${template.name} (${template.template_type})`;
+            option.dataset.template = JSON.stringify(template);
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Failed to load templates:', error);
+        document.getElementById('template-select').innerHTML = '<option value="">Failed to load templates</option>';
+    }
+}
+
+// Mode switching
+document.querySelectorAll('input[name="notif-mode"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        selectedMode = this.value;
+        document.getElementById('template-section').style.display = selectedMode === 'template' ? 'block' : 'none';
+        document.getElementById('manual-section').style.display = selectedMode === 'manual' ? 'block' : 'none';
+    });
+});
+
+// Template selection
+document.getElementById('template-select').addEventListener('change', function() {
+    const option = this.options[this.selectedIndex];
+    if (option.value && option.dataset.template) {
+        selectedTemplate = JSON.parse(option.dataset.template);
+        renderTemplateVariables(selectedTemplate);
+    } else {
+        selectedTemplate = null;
+        document.getElementById('template-variables-container').innerHTML = '';
+    }
+});
+
+// Render template variable inputs
+function renderTemplateVariables(template) {
+    const container = document.getElementById('template-variables-container');
+    const variables = template.variables || [];
+    
+    if (variables.length === 0) {
+        container.innerHTML = '<small class="text-muted">This template has no variables</small>';
+        return;
+    }
+    
+    let html = '<div class="alert alert-info"><i class="bi bi-info-circle"></i> Fill in template variables:</div>';
+    variables.forEach(varName => {
+        html += `
+            <div class="mb-3">
+                <label class="form-label">{${varName}}</label>
+                <input type="text" class="form-control template-var" data-var="${varName}" placeholder="Enter value for ${varName}">
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+// Load templates on page load
+loadTemplates();
+
+document.getElementById('push-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
+    
+    try {
+        const startTime = Date.now();
+        let requestBody = {
+            device_token: document.getElementById('device-token').value,
+            platform: document.getElementById('platform').value
+        };
+        
+        if (selectedMode === 'template') {
+            // Template mode
+            if (!selectedTemplate) {
+                showAlert('Please select a template', 'warning');
+                return;
+            }
+            
+            requestBody.template_id = selectedTemplate.id;
+            
+            // Collect variable values
+            const variables = {};
+            document.querySelectorAll('.template-var').forEach(input => {
+                variables[input.dataset.var] = input.value;
+            });
+            requestBody.variables = variables;
+            
+        } else {
+            // Manual mode
+            requestBody.title = document.getElementById('notif-title').value;
+            requestBody.body = document.getElementById('notif-body').value;
+            requestBody.badge = parseInt(document.getElementById('badge').value);
+            requestBody.sound = document.getElementById('sound').value;
+        }
+        
+        const response = await auth.apiRequest('/api/v1/push/send', {
+            method: 'POST',
+            body: JSON.stringify(requestBody)
+        });
+        
+        const data = await response.json();
+        const latency = Date.now() - startTime;
+        
+        if (response.ok) {
+            showAlert('✅ Push notification sent successfully!', 'success');
+            displayResult({
+                device_token: document.getElementById('device-token').value,
+                platform: document.getElementById('platform').value,
+                title: selectedMode === 'template' ? selectedTemplate.name : document.getElementById('notif-title').value,
+                body: selectedMode === 'template' ? 'Template-based' : document.getElementById('notif-body').value,
+                timestamp: new Date().toLocaleString(),
+                status: 'Success',
+                latency: latency,
+                message_id: data.message_id || 'N/A',
+                mode: selectedMode
+            });
+        } else {
+            showAlert(`❌ Failed: ${data.error}`, 'danger');
+            displayResult({
+                device_token: document.getElementById('device-token').value,
+                platform: document.getElementById('platform').value,
+                title: selectedMode === 'template' ? selectedTemplate.name : document.getElementById('notif-title').value,
+                body: selectedMode === 'template' ? 'Template-based' : document.getElementById('notif-body').value,
+                timestamp: new Date().toLocaleString(),
+                status: 'Failed',
+                error: data.error,
+                latency: latency,
+                mode: selectedMode
+            });
+        }
+    } catch (error) {
+        showAlert('❌ Error sending push notification', 'danger');
+        console.error('Error:', error);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-send"></i> Send Mobile Push';
+    }
+});
+
+function displayResult(result) {
+    const resultsDiv = document.getElementById('results');
+    const statusBadge = result.status === 'Success' 
+        ? '<span class="badge bg-success">Success</span>'
+        : '<span class="badge bg-danger">Failed</span>';
+    
+    const modeBadge = result.mode === 'template'
+        ? '<span class="badge bg-info">Template</span>'
+        : '<span class="badge bg-secondary">Manual</span>';
+    
+    let html = `
+        <div class="text-start">
+            <div class="row mb-2">
+                <div class="col-4 fw-bold">Status:</div>
+                <div class="col-8">${statusBadge} ${modeBadge}</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-4 fw-bold">Platform:</div>
+                <div class="col-8">${result.platform.toUpperCase()}</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-4 fw-bold">Device Token:</div>
+                <div class="col-8"><code class="small">${result.device_token.substring(0, 20)}...</code></div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-4 fw-bold">Title:</div>
+                <div class="col-8">${result.title}</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-4 fw-bold">Message:</div>
+                <div class="col-8">${result.body}</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-4 fw-bold">Latency:</div>
+                <div class="col-8">${result.latency}ms</div>
+            </div>`;
+    
+    if (result.message_id) {
+        html += `
+            <div class="row mb-2">
+                <div class="col-4 fw-bold">Message ID:</div>
+                <div class="col-8"><code class="small">${result.message_id}</code></div>
+            </div>`;
+    }
+    
+    if (result.error) {
+        html += `
+            <div class="row mb-2">
+                <div class="col-4 fw-bold">Error:</div>
+                <div class="col-8 text-danger">${result.error}</div>
+            </div>`;
+    }
+    
+    html += `
+            <div class="row mb-2">
+                <div class="col-4 fw-bold">Timestamp:</div>
+                <div class="col-8">${result.timestamp}</div>
+            </div>
+        </div>
+    `;
+    
+    resultsDiv.innerHTML = html;
+}
+
+}); // End DOMContentLoaded
+</script>
+{% endblock %}

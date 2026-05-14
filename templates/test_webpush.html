@@ -1,0 +1,729 @@
+{% extends "base.html" %}
+
+{% block title %}Web Push Testing - Notification Manager{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="d-flex align-items-center mb-4">
+                <a href="/dashboard" class="btn btn-outline-secondary me-3">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <div>
+                    <h1 class="mb-0">
+                        <i class="bi bi-browser-chrome text-primary"></i> Web Push Testing
+                    </h1>
+                    <p class="text-muted mb-0">Test browser push notifications with VAPID authentication</p>
+                </div>
+            </div>
+
+            <!-- Status Alert -->
+            <div id="status-alert" class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Checking browser support...
+            </div>
+
+            <!-- Subscription Card -->
+            <div class="card dashboard-card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-bell-fill"></i> Step 1: Subscribe to Notifications
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">User ID</label>
+                        <input type="text" class="form-control" id="subscribe-user-id" readonly>
+                        <small class="form-text text-muted">Your browser subscription is linked to your account</small>
+                    </div>
+                    
+                    <div id="subscription-status" class="mb-3">
+                        <span class="badge bg-secondary">Not Subscribed</span>
+                    </div>
+
+                    <button class="btn btn-gradient-primary" id="subscribe-btn" disabled>
+                        <i class="bi bi-bell"></i> Subscribe to Push Notifications
+                    </button>
+                    
+                    <button class="btn btn-danger d-none" id="unsubscribe-btn">
+                        <i class="bi bi-bell-slash"></i> Unsubscribe
+                    </button>
+
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle"></i> <strong>How it works:</strong><br>
+                            1. Click "Subscribe" to enable browser notifications<br>
+                            2. Grant permission when prompted by your browser<br>
+                            3. Your subscription is registered with the server<br>
+                            4. You can then send test notifications below
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Send Notification Card -->
+            <div class="card dashboard-card mb-4" id="send-card" style="display:none;">
+                <div class="card-header">
+                    <i class="bi bi-send"></i> Step 2: Send Test Notification
+                </div>
+                <div class="card-body">
+                    <form id="send-form">
+                        <!-- Mode Selector -->
+                        <div class="mb-3">
+                            <label class="form-label">Notification Mode</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="notif-mode" id="mode-template" value="template" checked>
+                                <label class="btn btn-outline-primary" for="mode-template">
+                                    <i class="bi bi-file-earmark-text"></i> Use Template
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="notif-mode" id="mode-manual" value="manual">
+                                <label class="btn btn-outline-primary" for="mode-manual">
+                                    <i class="bi bi-pencil"></i> Manual Input
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Template Selector -->
+                        <div id="template-section">
+                            <div class="mb-3">
+                                <label class="form-label">Select Template</label>
+                                <select class="form-select" id="template-select">
+                                    <option value="">Loading templates...</option>
+                                </select>
+                                <small class="form-text text-muted">
+                                    <a href="/templates" target="_blank">Manage templates</a>
+                                </small>
+                            </div>
+                            
+                            <!-- Variable Inputs (dynamically generated) -->
+                            <div id="template-variables-container"></div>
+                        </div>
+
+                        <!-- Manual Input Fields -->
+                        <div id="manual-section" style="display:none;">
+                            <div class="mb-3">
+                                <label class="form-label">Notification Title</label>
+                                <input type="text" class="form-control" id="notif-title" value="BBVA Security Alert">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Message Body</label>
+                                <textarea class="form-control" id="notif-body" rows="3">Unusual activity detected on your account. Please review immediately.</textarea>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Icon URL</label>
+                                    <input type="text" class="form-control" id="notif-icon" value="/static/images/icon.png">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Click URL</label>
+                                    <input type="text" class="form-control" id="notif-url" value="https://www.bbva.com">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-gradient-success w-100">
+                            <i class="bi bi-send"></i> Send Test Notification
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Statistics Card -->
+            <div class="card dashboard-card">
+                <div class="card-header">
+                    <i class="bi bi-graph-up"></i> Statistics
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="stats-value text-primary" id="stat-sent">0</div>
+                            <div class="stats-label">Sent</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stats-value text-success" id="stat-success">0</div>
+                            <div class="stats-label">Success</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stats-value text-danger" id="stat-failed">0</div>
+                            <div class="stats-label">Failed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Check authentication first
+console.log('Checking authentication...');
+if (!auth.requireAuth()) {
+    console.log('Not authenticated, redirecting...');
+    // Will redirect to login
+} else {
+    console.log('Authenticated, initializing...');
+}
+
+// Set user ID from authenticated user
+const currentUser = auth.getUser();
+if (currentUser) {
+    document.getElementById('subscribe-user-id').value = currentUser.username;
+    console.log('Set user ID to:', currentUser.username);
+}
+
+let vapidPublicKey = null;
+let currentSubscription = null;
+let stats = { sent: 0, success: 0, failed: 0 };
+
+// Check for click tracking parameter on page load - IMMEDIATELY
+(function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const trackClickId = urlParams.get('track_click');
+    
+    if (trackClickId) {
+        console.log('🔔 FOUND track_click parameter:', trackClickId);
+        
+        // Track immediately
+        const token = localStorage.getItem('access_token');
+        if (token) {
+            fetch(`/api/v1/logs/${trackClickId}/click`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('✅ Click tracked successfully:', data);
+                alert(`✅ Notification click tracked! Log ID: ${trackClickId}`);
+                
+                // Clean up URL
+                urlParams.delete('track_click');
+                const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+                window.history.replaceState({}, '', newUrl);
+            })
+            .catch(err => {
+                console.error('❌ Error tracking click:', err);
+            });
+        } else {
+            console.error('❌ No auth token found');
+        }
+    }
+})();
+
+// Service Worker message handler for click tracking
+if ('serviceWorker' in navigator && navigator.serviceWorker) {
+    navigator.serviceWorker.addEventListener('message', (event) => {
+        console.log('📬 Received message from service worker:', event.data);
+        if (event.data && event.data.type === 'TRACK_CLICK') {
+            const logId = event.data.logId;
+            console.log('🖱️ Tracking click for log ID:', logId);
+            
+            // Track asynchronously without blocking
+            (async () => {
+                try {
+                    const response = await auth.apiRequest(`/api/v1/logs/${logId}/click`, {
+                        method: 'POST'
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('✅ Click tracked successfully:', data);
+                        showAlert(`✅ Click tracked for notification!`, 'success');
+                    } else {
+                        const error = await response.text();
+                        console.error('❌ Failed to track click:', error);
+                    }
+                } catch (err) {
+                    console.error('❌ Error tracking click:', err);
+                }
+            })();
+        }
+    });
+    console.log('📡 Service worker message listener registered');
+}
+
+// Check for click tracking parameter on page load
+window.addEventListener('DOMContentLoaded', async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const trackClickId = urlParams.get('track_click');
+    
+    if (trackClickId) {
+        console.log('🔔 Found track_click parameter:', trackClickId);
+        
+        try {
+            const response = await auth.apiRequest(`/api/v1/logs/${trackClickId}/click`, {
+                method: 'POST'
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('✅ Click tracked successfully:', data);
+                showAlert('✅ Notification click tracked!', 'success');
+            } else {
+                console.error('❌ Failed to track click:', await response.text());
+            }
+            
+            // Clean up URL
+            urlParams.delete('track_click');
+            const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+            window.history.replaceState({}, '', newUrl);
+        } catch (err) {
+            console.error('❌ Error tracking click:', err);
+        }
+    }
+});
+
+// Test click tracking function
+async function testClickTracking() {
+    if (!lastLogId) {
+        alert('No notification has been sent yet. Send a notification first.');
+        return;
+    }
+    
+    console.log('🧪 Testing click tracking for log ID:', lastLogId);
+    
+    try {
+        const response = await auth.apiRequest(`/api/v1/logs/${lastLogId}/click`, {
+            method: 'POST'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('✅ Click tracking test successful:', data);
+            alert(`✅ Click tracked successfully for log ${lastLogId}!\nCheck the logs page to verify.`);
+        } else {
+            const error = await response.json();
+            console.error('❌ Click tracking test failed:', error);
+            alert(`❌ Failed: ${error.error}`);
+        }
+    } catch (err) {
+        console.error('❌ Error in click tracking test:', err);
+        alert(`❌ Error: ${err.message}`);
+    }
+}
+
+// Check browser support
+async function checkSupport() {
+    try {
+        console.log('Checking browser support...');
+        if (!('serviceWorker' in navigator)) {
+            showStatus('danger', '❌ Service Workers not supported in this browser');
+            return false;
+        }
+        
+        if (!('PushManager' in window)) {
+            showStatus('danger', '❌ Push notifications not supported in this browser');
+            return false;
+        }
+        
+        showStatus('info', '⏳ Connecting to server...');
+        console.log('Fetching VAPID public key...');
+        
+        // Get VAPID public key
+        const response = await auth.apiRequest('/api/v1/webpush/vapid-public-key');
+        console.log('VAPID response:', response);
+        if (!response.ok) {
+            throw new Error(`Server returned ${response.status}`);
+        }
+        const data = await response.json();
+        console.log('VAPID data:', data);
+        vapidPublicKey = data.publicKey;
+        
+        showStatus('info', '⏳ Registering service worker...');
+        console.log('Registering service worker...');
+        
+        // Register service worker
+        await registerServiceWorker();
+        
+        showStatus('success', '✅ Browser supports Web Push notifications - Ready!');
+        document.getElementById('subscribe-btn').disabled = false;
+        
+        return true;
+    } catch (error) {
+        console.error('checkSupport error:', error);
+        showStatus('danger', `❌ Failed to initialize: ${error.message}`);
+        return false;
+    }
+}
+
+// Register service worker
+async function registerServiceWorker() {
+    try {
+        console.log('Registering service worker at /sw.js...');
+        
+        // Register service worker (browser will handle updates automatically)
+        const registration = await navigator.serviceWorker.register('/sw.js', {
+            updateViaCache: 'none'
+        });
+        console.log('✅ Service worker registered:', registration);
+        
+        // Check for updates
+        registration.update();
+        
+        // Wait for it to be ready
+        await navigator.serviceWorker.ready;
+        console.log('✅ Service worker ready');
+        
+        // Check if already subscribed
+        console.log('Checking existing subscription...');
+        const subscription = await registration.pushManager.getSubscription();
+        console.log('Existing subscription:', subscription);
+        if (subscription) {
+            currentSubscription = subscription;
+            showSubscribed();
+        }
+    } catch (error) {
+        console.error('Service Worker registration failed:', error);
+        throw new Error(`Service Worker registration failed: ${error.message}`);
+    }
+}
+
+// Subscribe to push
+document.getElementById('subscribe-btn').addEventListener('click', async () => {
+    const userId = document.getElementById('subscribe-user-id').value.trim();
+    if (!userId) {
+        showAlert('Please enter a User ID', 'warning');
+        return;
+    }
+    
+    const btn = document.getElementById('subscribe-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Subscribing...';
+    
+    try {
+        showStatus('info', 'Requesting notification permission...');
+        
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+            showStatus('danger', '❌ Notification permission denied');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-bell"></i> Subscribe to Push Notifications';
+            return;
+        }
+        
+        showStatus('info', 'Creating subscription...');
+        
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+        });
+        
+        currentSubscription = subscription;
+        
+        showStatus('info', 'Registering with server...');
+        const response = await auth.apiRequest('/api/v1/webpush/subscribe', {
+            method: 'POST',
+            body: JSON.stringify({
+                subscription: subscription.toJSON()
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to register subscription');
+        }
+        
+        showStatus('success', `✅ Successfully subscribed! (User: ${userId})`);
+        showSubscribed();
+        
+    } catch (error) {
+        console.error('Subscription failed:', error);
+        showStatus('danger', `❌ Subscription failed: ${error.message}`);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-bell"></i> Subscribe to Push Notifications';
+    }
+});
+
+// Unsubscribe
+document.getElementById('unsubscribe-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('unsubscribe-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Unsubscribing...';
+    
+    try {
+        if (currentSubscription) {
+            await currentSubscription.unsubscribe();
+            currentSubscription = null;
+        }
+        
+        await auth.apiRequest('/api/v1/webpush/unsubscribe', {
+            method: 'POST'
+        });
+        
+        showStatus('warning', '⚠️ Unsubscribed from notifications');
+        showUnsubscribed();
+        
+    } catch (error) {
+        console.error('Unsubscribe failed:', error);
+        showStatus('danger', `❌ Unsubscribe failed: ${error.message}`);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-bell-slash"></i> Unsubscribe';
+    }
+});
+
+// Template data (loaded from API)
+let notificationTemplates = {};
+
+// Load templates from API
+async function loadTemplates() {
+    try {
+        const response = await auth.apiRequest('/api/v1/templates?channel=webpush&active=true');
+        const data = await response.json();
+        
+        const select = document.getElementById('template-select');
+        select.innerHTML = '<option value="">-- Choose a template --</option>';
+        
+        if (data.templates.length === 0) {
+            select.innerHTML = '<option value="">No templates available</option>';
+            return;
+        }
+        
+        // Store full template objects (content + variables)
+        notificationTemplates = {};
+        data.templates.forEach(template => {
+            notificationTemplates[template.id] = {
+                content: template.content,
+                variables: template.variables || []
+            };
+            
+            const option = document.createElement('option');
+            option.value = template.id;
+            const varLabel = template.variables && template.variables.length > 0 ? ` [${template.variables.length} vars]` : '';
+            option.textContent = `${template.name} (${template.template_type})${varLabel}`;
+            select.appendChild(option);
+        });
+        
+    } catch (error) {
+        console.error('Failed to load templates:', error);
+        const select = document.getElementById('template-select');
+        select.innerHTML = '<option value="">Error loading templates</option>';
+    }
+}
+
+// Load templates on page load
+loadTemplates();
+
+// Mode toggle handlers
+document.querySelectorAll('input[name="notif-mode"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+        const templateSection = document.getElementById('template-section');
+        const manualSection = document.getElementById('manual-section');
+        
+        if (e.target.value === 'template') {
+            templateSection.style.display = 'block';
+            manualSection.style.display = 'none';
+        } else {
+            templateSection.style.display = 'none';
+            manualSection.style.display = 'block';
+        }
+    });
+});
+
+// Template selector handler
+document.getElementById('template-select').addEventListener('change', (e) => {
+    const templateId = e.target.value;
+    const container = document.getElementById('template-variables-container');
+    
+    // Clear previous variable inputs
+    container.innerHTML = '';
+    
+    if (!templateId) return;
+    
+    const template = notificationTemplates[templateId];
+    if (!template || !template.variables || template.variables.length === 0) {
+        return; // No variables needed
+    }
+    
+    // Create input fields for each variable
+    container.innerHTML = `
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> This template uses <strong>${template.variables.length}</strong> variable(s). Please provide values:
+        </div>
+    `;
+    
+    template.variables.forEach(varName => {
+        const inputHtml = `
+            <div class="mb-3">
+                <label class="form-label">${varName}</label>
+                <input type="text" class="form-control template-var" data-var="${varName}" placeholder="Enter value for ${varName}">
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', inputHtml);
+    });
+});
+
+// Send notification
+document.getElementById('send-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
+    
+    try {
+        // Determine notification data based on mode
+        let notificationData;
+        const mode = document.querySelector('input[name="notif-mode"]:checked').value;
+        
+        if (mode === 'template') {
+            const templateSelect = document.getElementById('template-select');
+            const templateId = templateSelect.value;
+            
+            if (!templateId) {
+                showAlert('⚠️ Please select a template', 'warning');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-send"></i> Send Test Notification';
+                return;
+            }
+            
+            const template = notificationTemplates[templateId];
+            if (!template) {
+                showAlert('⚠️ Template not found', 'danger');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-send"></i> Send Test Notification';
+                return;
+            }
+            
+            // Get variable values
+            const variables = {};
+            const varInputs = document.querySelectorAll('.template-var');
+            let missingVars = [];
+            
+            varInputs.forEach(input => {
+                const varName = input.dataset.var;
+                const value = input.value.trim();
+                if (!value) {
+                    missingVars.push(varName);
+                } else {
+                    variables[varName] = value;
+                }
+            });
+            
+            if (missingVars.length > 0) {
+                showAlert(`⚠️ Please fill in all variables: ${missingVars.join(', ')}`, 'warning');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-send"></i> Send Test Notification';
+                return;
+            }
+            
+            // Substitute variables in template content
+            notificationData = {
+                title: substituteVariables(template.content.title, variables),
+                body: substituteVariables(template.content.body, variables),
+                icon: substituteVariables(template.content.icon, variables),
+                url: substituteVariables(template.content.url, variables),
+                template_id: parseInt(templateId)
+            };
+        } else {
+            // Manual mode
+            notificationData = {
+                title: document.getElementById('notif-title').value,
+                body: document.getElementById('notif-body').value,
+                icon: document.getElementById('notif-icon').value,
+                url: document.getElementById('notif-url').value
+            };
+        }
+        
+        const response = await auth.apiRequest('/api/v1/webpush/send', {
+            method: 'POST',
+            body: JSON.stringify(notificationData)
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            lastLogId = data.log_id; // Store for testing
+            console.log('📝 Notification sent with log_id:', lastLogId);
+            showAlert(`✅ Notification sent! Log ID: ${data.log_id} - <a href="/logs" class="alert-link">View logs</a>`, 'success');
+            stats.sent++;
+            stats.success++;
+        } else {
+            showAlert(`❌ Failed: ${data.error}`, 'danger');
+            stats.sent++;
+            stats.failed++;
+        }
+        
+        updateStats();
+        
+    } catch (error) {
+        showAlert('❌ Error sending notification', 'danger');
+        stats.sent++;
+        stats.failed++;
+        updateStats();
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-send"></i> Send Test Notification';
+    }
+});
+
+function showSubscribed() {
+    document.getElementById('subscribe-btn').classList.add('d-none');
+    document.getElementById('unsubscribe-btn').classList.remove('d-none');
+    document.getElementById('subscribe-user-id').disabled = true;
+    document.getElementById('subscription-status').innerHTML = '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Subscribed</span>';
+    document.getElementById('send-card').style.display = 'block';
+}
+
+function showUnsubscribed() {
+    const subscribeBtn = document.getElementById('subscribe-btn');
+    const unsubscribeBtn = document.getElementById('unsubscribe-btn');
+    
+    subscribeBtn.classList.remove('d-none');
+    subscribeBtn.disabled = false;
+    subscribeBtn.innerHTML = '<i class="bi bi-bell"></i> Subscribe to Push Notifications';
+    
+    unsubscribeBtn.classList.add('d-none');
+    unsubscribeBtn.disabled = false;
+    unsubscribeBtn.innerHTML = '<i class="bi bi-bell-slash"></i> Unsubscribe';
+    
+    document.getElementById('subscribe-user-id').disabled = false;
+    document.getElementById('subscription-status').innerHTML = '<span class="badge bg-secondary">Not Subscribed</span>';
+    document.getElementById('send-card').style.display = 'none';
+}
+
+function showStatus(type, message) {
+    const alert = document.getElementById('status-alert');
+    alert.className = `alert alert-${type}`;
+    alert.innerHTML = message;
+}
+
+// Helper to substitute variables in text
+function substituteVariables(text, variables) {
+    if (!text) return text;
+    let result = text;
+    for (const [key, value] of Object.entries(variables)) {
+        result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), value);
+    }
+    return result;
+}
+
+function updateStats() {
+    document.getElementById('stat-sent').textContent = stats.sent;
+    document.getElementById('stat-success').textContent = stats.success;
+    document.getElementById('stat-failed').textContent = stats.failed;
+}
+
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
+// Initialize
+console.log('Initializing Web Push test page...');
+checkSupport().then(result => {
+    console.log('checkSupport completed:', result);
+}).catch(error => {
+    console.error('checkSupport failed:', error);
+});
+</script>
+{% endblock %}

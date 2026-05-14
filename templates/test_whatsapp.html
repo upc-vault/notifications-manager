@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}WhatsApp Testing - Notification Manager{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="d-flex align-items-center mb-4">
+                <a href="/dashboard" class="btn btn-outline-secondary me-3">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <div>
+                    <h1 class="mb-0">
+                        <i class="bi bi-whatsapp text-success"></i> WhatsApp Testing
+                    </h1>
+                    <p class="text-muted mb-0">Test WhatsApp Business API notifications</p>
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> <strong>WhatsApp Business API:</strong> Currently using mock mode for testing. To enable real WhatsApp sending:
+                <ol class="mb-0 mt-2">
+                    <li>Get your <strong>Phone Number ID</strong> and <strong>Access Token</strong> from <a href="https://developers.facebook.com/apps" target="_blank">Meta for Developers</a></li>
+                    <li>Set environment variables: <code>WHATSAPP_PHONE_NUMBER_ID</code> and <code>WHATSAPP_ACCESS_TOKEN</code></li>
+                    <li>Restart the server</li>
+                </ol>
+                <p class="small mb-0 mt-2 text-muted">First 1,000 conversations/month are FREE. Learn more at <a href="https://developers.facebook.com/docs/whatsapp/pricing" target="_blank">WhatsApp Pricing</a></p>
+            </div>
+
+            <div class="card dashboard-card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-send"></i> Send WhatsApp Message
+                </div>
+                <div class="card-body">
+                    <form id="whatsapp-form">
+                        <div class="mb-3">
+                            <label class="form-label">WhatsApp Number</label>
+                            <input type="tel" class="form-control" id="wa-number" value="+1234567890" required>
+                            <small class="form-text text-muted">Must be registered with WhatsApp</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Message Type</label>
+                            <select class="form-select" id="message-type">
+                                <option value="template">Template Message</option>
+                                <option value="text">Text Message (24h window)</option>
+                                <option value="media">Media Message</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3" id="template-selector">
+                            <label class="form-label">Template</label>
+                            <select class="form-select" id="template">
+                                <option value="account_alert">Account Alert</option>
+                                <option value="transaction_confirm">Transaction Confirmation</option>
+                                <option value="security_code">Security Code</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Message Content</label>
+                            <textarea class="form-control" id="wa-message" rows="4" required>Your BBVA account has been updated. Log in to view details.</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="include-button">
+                                <label class="form-check-label" for="include-button">
+                                    Include action button
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="button-config" style="display:none;">
+                            <label class="form-label">Button Text</label>
+                            <input type="text" class="form-control" id="button-text" value="View Account">
+                            <small class="form-text text-muted">Button URL: https://www.bbva.com</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-gradient-success w-100">
+                            <i class="bi bi-whatsapp"></i> Send WhatsApp Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card dashboard-card">
+                <div class="card-header">
+                    <i class="bi bi-chat-left-dots"></i> Message History
+                </div>
+                <div class="card-body">
+                    <div id="wa-history" class="text-muted text-center py-4">
+                        No messages sent yet
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!auth.requireAuth()) { return; }
+
+let waHistory = [];
+
+// Toggle button config
+document.getElementById('include-button').addEventListener('change', (e) => {
+    document.getElementById('button-config').style.display = e.target.checked ? 'block' : 'none';
+});
+
+document.getElementById('whatsapp-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
+    
+    try {
+        const messageType = document.getElementById('message-type').value;
+        const templateName = document.getElementById('template').value;
+        const hasButton = document.getElementById('include-button').checked;
+        
+        // Prepare request payload
+        const payload = {
+            phone_number: document.getElementById('wa-number').value,
+            message: document.getElementById('wa-message').value,
+            type: messageType
+        };
+        
+        // Add type-specific fields
+        if (messageType === 'template') {
+            payload.template_name = templateName;
+            payload.template_parameters = [];  // Add parameters if needed
+        } else if (hasButton && messageType === 'interactive') {
+            payload.type = 'interactive';
+            payload.buttons = [
+                {
+                    type: "reply",
+                    reply: {
+                        id: "btn_1",
+                        title: document.getElementById('button-text').value
+                    }
+                }
+            ];
+        }
+        
+        // Send via API
+        const response = await auth.apiRequest('/api/v1/whatsapp/send', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Add to history
+            const message = {
+                to: payload.phone_number,
+                type: messageType,
+                template: templateName,
+                content: payload.message,
+                hasButton: hasButton,
+                buttonText: document.getElementById('button-text').value,
+                timestamp: new Date().toLocaleString(),
+                status: 'Sent',
+                wamid: data.delivery_result?.provider_response?.whatsapp_message_id || 'N/A',
+                latency: data.delivery_result?.latency_ms?.toFixed(2) || 'N/A'
+            };
+            
+            waHistory.unshift(message);
+            displayHistory();
+            
+            showAlert('✅ WhatsApp message sent successfully!', 'success');
+        } else {
+            showAlert(`❌ Failed: ${data.error}`, 'danger');
+        }
+        
+    } catch (error) {
+        console.error('Error sending WhatsApp:', error);
+        showAlert('❌ Error sending message', 'danger');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-whatsapp"></i> Send WhatsApp Message';
+    }
+});
+
+function displayHistory() {
+    const historyDiv = document.getElementById('wa-history');
+    
+    if (waHistory.length === 0) {
+        historyDiv.innerHTML = '<div class="text-muted text-center py-4">No messages sent yet</div>';
+        return;
+    }
+    
+    historyDiv.innerHTML = waHistory.map(msg => `
+        <div class="border-bottom pb-3 mb-3">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                    <strong>${msg.to}</strong>
+                    <div class="small text-muted">${msg.type} - ${msg.template}</div>
+                    <div class="small mt-1">"${msg.content.substring(0, 60)}${msg.content.length > 60 ? '...' : ''}"</div>
+                    ${msg.hasButton ? '<div class="small mt-1"><span class="badge bg-primary">Button: ' + msg.buttonText + '</span></div>' : ''}
+                </div>
+                <span class="badge bg-success">${msg.status}</span>
+            </div>
+            <div class="small text-muted">
+                <i class="bi bi-clock"></i> ${msg.timestamp}
+                <span class="ms-3"><i class="bi bi-hash"></i> ${msg.wamid}</span>
+                ${msg.latency !== 'N/A' ? `<span class="ms-3"><i class="bi bi-speedometer"></i> ${msg.latency}ms</span>` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+}); // End DOMContentLoaded
+</script>
+{% endblock %}

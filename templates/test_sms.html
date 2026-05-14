@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}SMS Testing - Notification Manager{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="d-flex align-items-center mb-4">
+                <a href="/dashboard" class="btn btn-outline-secondary me-3">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <div>
+                    <h1 class="mb-0">
+                        <i class="bi bi-chat-dots text-success"></i> SMS Testing
+                    </h1>
+                    <p class="text-muted mb-0">Test SMS notifications (Twilio)</p>
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> <strong>Mock Provider:</strong> This uses a simulated Twilio provider. In production, this would send real SMS messages.
+            </div>
+
+            <div class="card dashboard-card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-send"></i> Send SMS Notification
+                </div>
+                <div class="card-body">
+                    <form id="sms-form">
+                        <div class="mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" value="+1234567890" required>
+                            <small class="form-text text-muted">Include country code (e.g., +1 for US)</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Message</label>
+                            <textarea class="form-control" id="message" rows="4" maxlength="160" required>BBVA Alert: Your account balance is low. Log in to add funds.</textarea>
+                            <div class="d-flex justify-content-between">
+                                <small class="form-text text-muted">Max 160 characters</small>
+                                <small id="char-count" class="text-muted">0 / 160</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">From Number</label>
+                            <input type="tel" class="form-control" id="from-phone" value="+15551234567" required>
+                            <small class="form-text text-muted">Twilio phone number</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-gradient-success w-100">
+                            <i class="bi bi-send"></i> Send SMS
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card dashboard-card">
+                <div class="card-header">
+                    <i class="bi bi-list-ul"></i> SMS Log
+                </div>
+                <div class="card-body">
+                    <div id="sms-log" class="text-muted text-center py-4">
+                        No SMS sent yet
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!auth.requireAuth()) { return; }
+
+let smsLog = [];
+
+// Character counter
+document.getElementById('message').addEventListener('input', (e) => {
+    const count = e.target.value.length;
+    document.getElementById('char-count').textContent = `${count} / 160`;
+    
+    if (count > 160) {
+        e.target.value = e.target.value.substring(0, 160);
+        document.getElementById('char-count').textContent = '160 / 160';
+    }
+});
+
+document.getElementById('sms-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
+    
+    const sms = {
+        to: document.getElementById('phone').value,
+        from: document.getElementById('from-phone').value,
+        message: document.getElementById('message').value,
+        timestamp: new Date().toLocaleString(),
+        status: 'Delivered (Simulated)',
+        sid: 'SM' + Math.random().toString(36).substr(2, 20),
+        segments: Math.ceil(document.getElementById('message').value.length / 160)
+    };
+    
+    setTimeout(() => {
+        smsLog.unshift(sms);
+        showAlert('✅ SMS sent successfully (simulated)', 'success');
+        displayLog();
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-send"></i> Send SMS';
+    }, 1200);
+});
+
+function displayLog() {
+    const logDiv = document.getElementById('sms-log');
+    
+    if (smsLog.length === 0) {
+        logDiv.innerHTML = '<div class="text-muted text-center py-4">No SMS sent yet</div>';
+        return;
+    }
+    
+    logDiv.innerHTML = smsLog.map(sms => `
+        <div class="border-bottom pb-3 mb-3">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                    <strong>${sms.to}</strong>
+                    <div class="small text-muted">"${sms.message.substring(0, 50)}${sms.message.length > 50 ? '...' : ''}"</div>
+                </div>
+                <span class="badge bg-success">${sms.status}</span>
+            </div>
+            <div class="small text-muted">
+                <i class="bi bi-clock"></i> ${sms.timestamp}
+                <span class="ms-3"><i class="bi bi-hash"></i> ${sms.sid}</span>
+                <span class="ms-3">${sms.segments} segment(s)</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Initialize character count
+document.getElementById('message').dispatchEvent(new Event('input'));
+
+}); // End DOMContentLoaded
+</script>
+{% endblock %}

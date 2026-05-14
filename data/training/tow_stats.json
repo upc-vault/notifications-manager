@@ -1,0 +1,244 @@
+{
+  "users": [
+    {
+      "user_id": "user_001",
+      "stats": {
+        "total_selections": 192,
+        "channels": [
+          {
+            "channel": "push",
+            "position": -1,
+            "successes": 0,
+            "failures": 1,
+            "total_attempts": 1,
+            "success_rate": 0.0
+          },
+          {
+            "channel": "email",
+            "position": -0.95,
+            "successes": 25,
+            "failures": 49,
+            "total_attempts": 74,
+            "success_rate": 0.33783783783783783
+          },
+          {
+            "channel": "sms",
+            "position": 1,
+            "successes": 5,
+            "failures": 39,
+            "total_attempts": 44,
+            "success_rate": 0.11363636363636363
+          },
+          {
+            "channel": "whatsapp",
+            "position": 1,
+            "successes": 20,
+            "failures": 52,
+            "total_attempts": 72,
+            "success_rate": 0.2777777777777778
+          },
+          {
+            "channel": "webpush",
+            "position": 1,
+            "successes": 0,
+            "failures": 1,
+            "total_attempts": 1,
+            "success_rate": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "user_id": "user_002",
+      "stats": {
+        "total_selections": 226,
+        "channels": [
+          {
+            "channel": "email",
+            "position": -1,
+            "successes": 30,
+            "failures": 40,
+            "total_attempts": 70,
+            "success_rate": 0.42857142857142855
+          },
+          {
+            "channel": "push",
+            "position": -0.8999999999999999,
+            "successes": 17,
+            "failures": 21,
+            "total_attempts": 38,
+            "success_rate": 0.4473684210526316
+          },
+          {
+            "channel": "whatsapp",
+            "position": 0.55,
+            "successes": 25,
+            "failures": 26,
+            "total_attempts": 51,
+            "success_rate": 0.49019607843137253
+          },
+          {
+            "channel": "sms",
+            "position": 1,
+            "successes": 9,
+            "failures": 29,
+            "total_attempts": 38,
+            "success_rate": 0.23684210526315788
+          },
+          {
+            "channel": "webpush",
+            "position": 1,
+            "successes": 12,
+            "failures": 17,
+            "total_attempts": 29,
+            "success_rate": 0.41379310344827586
+          }
+        ]
+      }
+    },
+    {
+      "user_id": "user_003",
+      "stats": {
+        "total_selections": 189,
+        "channels": [
+          {
+            "channel": "push",
+            "position": -0.95,
+            "successes": 8,
+            "failures": 25,
+            "total_attempts": 33,
+            "success_rate": 0.24242424242424243
+          },
+          {
+            "channel": "email",
+            "position": -0.95,
+            "successes": 15,
+            "failures": 35,
+            "total_attempts": 50,
+            "success_rate": 0.3
+          },
+          {
+            "channel": "sms",
+            "position": 1,
+            "successes": 36,
+            "failures": 59,
+            "total_attempts": 95,
+            "success_rate": 0.37894736842105264
+          },
+          {
+            "channel": "whatsapp",
+            "position": 1,
+            "successes": 0,
+            "failures": 10,
+            "total_attempts": 10,
+            "success_rate": 0.0
+          },
+          {
+            "channel": "webpush",
+            "position": 1,
+            "successes": 0,
+            "failures": 1,
+            "total_attempts": 1,
+            "success_rate": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "user_id": "user_004",
+      "stats": {
+        "total_selections": 198,
+        "channels": [
+          {
+            "channel": "email",
+            "position": -1,
+            "successes": 5,
+            "failures": 22,
+            "total_attempts": 27,
+            "success_rate": 0.18518518518518517
+          },
+          {
+            "channel": "push",
+            "position": -0.8999999999999999,
+            "successes": 11,
+            "failures": 22,
+            "total_attempts": 33,
+            "success_rate": 0.3333333333333333
+          },
+          {
+            "channel": "whatsapp",
+            "position": 0.6808000000000001,
+            "successes": 40,
+            "failures": 43,
+            "total_attempts": 83,
+            "success_rate": 0.4819277108433735
+          },
+          {
+            "channel": "sms",
+            "position": 1,
+            "successes": 16,
+            "failures": 38,
+            "total_attempts": 54,
+            "success_rate": 0.2962962962962963
+          },
+          {
+            "channel": "webpush",
+            "position": 1,
+            "successes": 0,
+            "failures": 1,
+            "total_attempts": 1,
+            "success_rate": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "user_id": "user_005",
+      "stats": {
+        "total_selections": 195,
+        "channels": [
+          {
+            "channel": "push",
+            "position": -1,
+            "successes": 0,
+            "failures": 1,
+            "total_attempts": 1,
+            "success_rate": 0.0
+          },
+          {
+            "channel": "email",
+            "position": -0.95,
+            "successes": 15,
+            "failures": 31,
+            "total_attempts": 46,
+            "success_rate": 0.32608695652173914
+          },
+          {
+            "channel": "sms",
+            "position": 1,
+            "successes": 17,
+            "failures": 59,
+            "total_attempts": 76,
+            "success_rate": 0.2236842105263158
+          },
+          {
+            "channel": "whatsapp",
+            "position": 1,
+            "successes": 22,
+            "failures": 49,
+            "total_attempts": 71,
+            "success_rate": 0.30985915492957744
+          },
+          {
+            "channel": "webpush",
+            "position": 1,
+            "successes": 0,
+            "failures": 1,
+            "total_attempts": 1,
+            "success_rate": 0.0
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click Tracking Test</title>
+</head>
+<body>
+    <h1>Click Tracking Test Page</h1>
+    <p id="status">Checking for click tracking parameter...</p>
+    
+    <script>
+        // Check if we have a tracking parameter in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const trackClickId = urlParams.get('track_click');
+        
+        if (trackClickId) {
+            document.getElementById('status').textContent = `Found tracking ID: ${trackClickId}. Sending to API...`;
+            
+            // Get token from localStorage
+            const token = localStorage.getItem('access_token');
+            
+            if (token) {
+                fetch(`/api/v1/logs/${trackClickId}/click`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('status').textContent = `✅ Click tracked successfully!`;
+                    console.log('Click tracked:', data);
+                    
+                    // Remove the tracking parameter and redirect
+                    urlParams.delete('track_click');
+                    const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+                    setTimeout(() => {
+                        window.location.replace(newUrl);
+                    }, 1000);
+                })
+                .catch(err => {
+                    document.getElementById('status').textContent = `❌ Failed to track click: ${err.message}`;
+                    console.error('Failed to track click:', err);
+                });
+            } else {
+                document.getElementById('status').textContent = '⚠️ Not logged in. Cannot track click.';
+            }
+        } else {
+            document.getElementById('status').textContent = 'No tracking parameter found.';
+        }
+    </script>
+</body>
+</html>

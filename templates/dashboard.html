@@ -1,0 +1,594 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Notifications Test{% endblock %}
+
+{% block extra_css %}
+<style>
+.test-card {
+    margin-bottom: 1.5rem;
+}
+.channel-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+.channel-selector .btn {
+    flex: 1;
+    min-width: 120px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="bi bi-speedometer2"></i> Notifications Testing Dashboard
+            </h1>
+            <p class="text-muted">Test all notification channels and ML algorithms</p>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <i class="bi bi-send text-primary" style="font-size: 2rem;"></i>
+                <div class="stats-value" id="stat-sent">0</div>
+                <div class="stats-label">Total Sent</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                <div class="stats-value" id="stat-success">0</div>
+                <div class="stats-label">Successful</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <i class="bi bi-x-circle text-danger" style="font-size: 2rem;"></i>
+                <div class="stats-value" id="stat-failed">0</div>
+                <div class="stats-label">Failed</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <i class="bi bi-clock text-warning" style="font-size: 2rem;"></i>
+                <div class="stats-value" id="stat-queue">0</div>
+                <div class="stats-label">In Queue</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ML Algorithm Performance -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="mb-3">
+                <i class="bi bi-robot"></i> ML Algorithm Performance
+            </h3>
+        </div>
+        <div class="col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-cpu text-primary"></i> Sleeping Bandit Algorithm</span>
+                    <span class="badge bg-primary" id="bandit-badge">Template Selection</span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="h2 mb-0 text-primary" id="bandit-success-rate">0%</div>
+                                <small class="text-muted">Success Rate</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="h2 mb-0 text-info" id="bandit-decisions">0</div>
+                                <small class="text-muted">Total Decisions</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="h4 mb-0 text-success" id="bandit-clicks">0</div>
+                                <small class="text-muted">User Clicks</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="h4 mb-0 text-success" id="bandit-ctr">0%</div>
+                                <small class="text-muted">Click-Through Rate</small>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Best Template:</span>
+                        <strong id="bandit-best-template">N/A</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <span class="text-muted">Best Template Rate:</span>
+                        <strong class="text-success" id="bandit-best-rate">0%</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-arrows-expand text-success"></i> Tug of War Algorithm</span>
+                    <span class="badge bg-success" id="tow-badge">Channel Selection</span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="h2 mb-0 text-success" id="tow-success-rate">0%</div>
+                                <small class="text-muted">Success Rate</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="h2 mb-0 text-info" id="tow-decisions">0</div>
+                                <small class="text-muted">Total Decisions</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="h4 mb-0 text-success" id="tow-clicks">0</div>
+                                <small class="text-muted">User Clicks</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="h4 mb-0 text-success" id="tow-ctr">0%</div>
+                                <small class="text-muted">Click-Through Rate</small>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Best Channel:</span>
+                        <strong id="tow-best-channel">N/A</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <span class="text-muted">Best Channel Rate:</span>
+                        <strong class="text-success" id="tow-best-rate">0%</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Test Form -->
+        <div class="col-lg-8">
+            <!-- Web Push Test -->
+            <div class="card dashboard-card test-card">
+                <div class="card-header">
+                    <i class="bi bi-browser-chrome text-primary"></i> Web Push Test
+                </div>
+                <div class="card-body">
+                    <form id="webpush-form">
+                        <div class="mb-3">
+                            <label class="form-label">User ID</label>
+                            <input type="text" class="form-control" id="webpush-user" value="user_demo_1" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Title</label>
+                                <input type="text" class="form-control" id="webpush-title" value="BBVA Security Alert" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Icon URL</label>
+                                <input type="text" class="form-control" id="webpush-icon" value="/static/images/icon.png">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Message</label>
+                            <textarea class="form-control" id="webpush-body" rows="2" required>Unusual activity detected on your account</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Click URL</label>
+                            <input type="text" class="form-control" id="webpush-url" value="https://www.bbva.com">
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-primary" onclick="subscribeWebPush()">
+                                <i class="bi bi-bell"></i> Subscribe First
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-send"></i> Send Web Push
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ML-Powered Notification -->
+            <div class="card dashboard-card test-card">
+                <div class="card-header">
+                    <i class="bi bi-robot text-success"></i> ML-Powered Notification (Auto-Select Channel)
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted mb-3">
+                        <i class="bi bi-info-circle"></i> ML will select the best template and channel based on user behavior and preferences
+                    </p>
+                    <form id="ml-form">
+                        <div class="mb-3">
+                            <label class="form-label">User ID</label>
+                            <input type="text" class="form-control" id="ml-user" value="user_demo_1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Template <span class="text-danger">*</span></label>
+                            <select class="form-select" id="ml-template" required>
+                                <option value="">-- Select a Template --</option>
+                            </select>
+                            <small class="text-muted">ML algorithms will select the best version for the user</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Message Type</label>
+                            <select class="form-select" id="ml-type">
+                                <option value="security">Security Alert</option>
+                                <option value="transaction">Transaction</option>
+                                <option value="promotional">Promotional</option>
+                                <option value="informational">Informational</option>
+                            </select>
+                        </div>
+                        <div id="template-preview" class="alert alert-info" style="display:none;">
+                            <strong>Template Preview:</strong>
+                            <div id="preview-content" class="mt-2 small"></div>
+                        </div>
+                        <button type="submit" class="btn btn-gradient-success">
+                            <i class="bi bi-magic"></i> Send with ML Decision
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Manual Channel Test -->
+            <div class="card dashboard-card test-card">
+                <div class="card-header">
+                    <i class="bi bi-sliders text-info"></i> Manual Channel Test
+                </div>
+                <div class="card-body">
+                    <div class="channel-selector mb-3">
+                        <button class="btn btn-outline-primary" data-channel="push">
+                            <i class="bi bi-phone"></i> Mobile Push
+                        </button>
+                        <button class="btn btn-outline-info" data-channel="email">
+                            <i class="bi bi-envelope"></i> Email
+                        </button>
+                        <button class="btn btn-outline-success" data-channel="sms">
+                            <i class="bi bi-chat-dots"></i> SMS
+                        </button>
+                        <button class="btn btn-outline-success" data-channel="whatsapp">
+                            <i class="bi bi-whatsapp"></i> WhatsApp
+                        </button>
+                    </div>
+                    <p class="small text-muted">
+                        <i class="bi bi-info-circle"></i> These are mock providers for testing. Click a channel above to send a test notification.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- System Status -->
+            <div class="card dashboard-card mb-3">
+                <div class="card-header">
+                    <i class="bi bi-activity"></i> System Status
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Queue Publisher:</span>
+                        <span class="badge bg-success" id="publisher-status">Running</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>ESB:</span>
+                        <span class="badge bg-success" id="esb-status">Active</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>ML Models:</span>
+                        <span class="badge bg-success" id="ml-status">Loaded</span>
+                    </div>
+                    <hr>
+                    <button class="btn btn-sm btn-outline-primary w-100" onclick="refreshStats()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh Stats
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card dashboard-card">
+                <div class="card-header">
+                    <i class="bi bi-clock-history"></i> Recent Activity
+                </div>
+                <div class="card-body">
+                    <div id="activity-log" style="max-height: 400px; overflow-y: auto;">
+                        <p class="text-muted small">No recent activity</p>
+                    </div>
+                </div>
+</div>
+</div>
+
+<script>
+// Wait for auth.js to load
+document.addEventListener('DOMContentLoaded', function() {
+    // Check authentication
+    if (!auth.requireAuth()) {
+        // Will redirect to login
+        return;
+    }
+
+let totalSent = 0;
+let totalSuccess = 0;
+let totalFailed = 0;
+
+// Load initial stats from database
+async function loadDatabaseStats() {
+    try {
+        const response = await auth.apiRequest('/api/v1/logs/stats');
+        if (response.ok) {
+            const data = await response.json();
+            // Total sent = only successfully sent + failed (excluding pending/other statuses)
+            totalSuccess = data.sent || 0;
+            totalFailed = data.failed || 0;
+            totalSent = data.total;  // Only count attempted notifications
+            updateStats();
+        }
+    } catch (error) {
+        console.error('Failed to load database stats:', error);
+    }
+}
+
+// Web Push Form
+document.getElementById('webpush-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
+    
+    try {
+        const response = await auth.apiRequest('/api/v1/webpush/test', {
+            method: 'POST',
+            body: JSON.stringify({
+                user_id: document.getElementById('webpush-user').value,
+                title: document.getElementById('webpush-title').value,
+                body: document.getElementById('webpush-body').value,
+                icon: document.getElementById('webpush-icon').value,
+                url: document.getElementById('webpush-url').value
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showAlert('Web Push sent successfully!', 'success');
+            logActivity('WebPush', 'Success', data.delivery_result.latency_ms);
+            totalSent++;
+            totalSuccess++;
+        } else {
+            showAlert(`Failed: ${data.error}`, 'danger');
+            logActivity('WebPush', 'Failed', null, data.error);
+            totalSent++;
+            totalFailed++;
+        }
+        
+        updateStats();
+    } catch (error) {
+        showAlert('Error sending notification', 'danger');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-send"></i> Send Web Push';
+    }
+});
+
+// Load templates for ML form
+async function loadTemplates() {
+    try {
+        const response = await auth.apiRequest('/api/v1/templates');
+        const data = await response.json();
+        
+        const select = document.getElementById('ml-template');
+        
+        // Group templates by name
+        const grouped = {};
+        data.templates.forEach(template => {
+            if (!grouped[template.name]) {
+                grouped[template.name] = [];
+            }
+            grouped[template.name].push(template);
+        });
+        
+        // Add options
+        Object.entries(grouped).forEach(([name, templates]) => {
+            const channels = templates.map(t => t.channel).join(', ');
+            const type = templates[0].template_type;
+            const option = document.createElement('option');
+            option.value = templates[0].id;  // Use first template's ID
+            option.textContent = `${name} (${type}) - Channels: ${channels}`;
+            option.dataset.templates = JSON.stringify(templates);
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Failed to load templates:', error);
+    }
+}
+
+// Template preview
+document.getElementById('ml-template')?.addEventListener('change', function() {
+    const option = this.options[this.selectedIndex];
+    if (option.value && option.dataset.templates) {
+        const templates = JSON.parse(option.dataset.templates);
+        const preview = document.getElementById('template-preview');
+        const content = document.getElementById('preview-content');
+        
+        let previewHtml = `<strong>${templates[0].name}</strong><br>`;
+        previewHtml += `Type: <span class="badge bg-secondary">${templates[0].template_type}</span><br>`;
+        previewHtml += `Available channels: `;
+        templates.forEach(t => {
+            previewHtml += `<span class="badge bg-info me-1">${t.channel}</span>`;
+        });
+        previewHtml += `<br><small class="text-muted">ML will select the best channel for the user</small>`;
+        
+        content.innerHTML = previewHtml;
+        preview.style.display = 'block';
+    } else {
+        document.getElementById('template-preview').style.display = 'none';
+    }
+});
+
+// ML Form
+document.getElementById('ml-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+    
+    try {
+        const templateId = document.getElementById('ml-template').value;
+        if (!templateId) {
+            showAlert('Please select a template', 'warning');
+            return;
+        }
+        
+        const response = await auth.apiRequest('/api/v1/notification/send', {
+            method: 'POST',
+            body: JSON.stringify({
+                user_id: document.getElementById('ml-user').value,
+                message_type: document.getElementById('ml-type').value,
+                template_id: parseInt(templateId)
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showAlert(`Notification queued! Channel: ${data.decision.channel}, Template: ${data.decision.template}`, 'success');
+            logActivity('ML Decision', `${data.decision.channel} selected`, null, data.decision.reasoning);
+            totalSent++;
+        } else {
+            showAlert(`Failed: ${data.error}`, 'danger');
+            totalFailed++;
+        }
+        
+        updateStats();
+    } catch (error) {
+        showAlert('Error sending notification', 'danger');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-magic"></i> Send with ML Decision';
+    }
+});
+
+// Channel selector - redirect to test pages
+document.querySelectorAll('.channel-selector .btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const channel = btn.dataset.channel;
+        window.location.href = `/test/${channel}`;
+    });
+});
+
+function subscribeWebPush() {
+    window.open('/static/webpush-test.html', '_blank');
+}
+
+function logActivity(channel, status, latency, details) {
+    const log = document.getElementById('activity-log');
+    const time = new Date().toLocaleTimeString();
+    const statusClass = status.includes('Success') || status.includes('selected') ? 'success' : status.includes('Failed') ? 'danger' : 'info';
+    
+    const entry = `
+        <div class="border-bottom pb-2 mb-2">
+            <div class="d-flex justify-content-between align-items-center">
+                <strong class="text-${statusClass}">${channel}</strong>
+                <small class="text-muted">${time}</small>
+            </div>
+            <div class="small">${status}</div>
+            ${latency ? `<div class="small text-muted">${latency.toFixed(2)}ms</div>` : ''}
+            ${details ? `<div class="small text-muted">${details}</div>` : ''}
+        </div>
+    `;
+    
+    if (log.querySelector('.text-muted.small')) {
+        log.innerHTML = entry;
+    } else {
+        log.innerHTML = entry + log.innerHTML;
+    }
+}
+
+function updateStats() {
+    document.getElementById('stat-sent').textContent = totalSent;
+    document.getElementById('stat-success').textContent = totalSuccess;
+    document.getElementById('stat-failed').textContent = totalFailed;
+    refreshStats();  // Also refresh queue count
+}
+
+async function refreshStats() {
+    try {
+        const response = await auth.apiRequest('/api/v1/queue/stats');
+        const data = await response.json();
+        document.getElementById('stat-queue').textContent = data.queue_size || 0;
+    } catch (error) {
+        console.error('Failed to refresh stats:', error);
+    }
+}
+
+async function loadAlgorithmStats() {
+    try {
+        const response = await auth.apiRequest('/api/v1/ml/algorithm-stats');
+        
+        if (!response.ok) {
+            throw new Error('Failed to load algorithm stats');
+        }
+        
+        const data = await response.json();
+        
+        // Update Sleeping Bandit stats
+        if (data.sleeping_bandit) {
+            const bandit = data.sleeping_bandit;
+            document.getElementById('bandit-success-rate').textContent = bandit.success_rate + '%';
+            document.getElementById('bandit-decisions').textContent = bandit.total_decisions || 0;
+            document.getElementById('bandit-clicks').textContent = bandit.total_clicks || 0;
+            document.getElementById('bandit-ctr').textContent = (bandit.ctr || 0) + '%';
+            document.getElementById('bandit-best-template').textContent = bandit.best_template || 'N/A';
+            document.getElementById('bandit-best-rate').textContent = (bandit.best_template_ctr || 0) + '%';
+        }
+        
+        // Update Tug of War stats
+        if (data.tug_of_war) {
+            const tow = data.tug_of_war;
+            document.getElementById('tow-success-rate').textContent = tow.success_rate + '%';
+            document.getElementById('tow-decisions').textContent = tow.total_decisions || 0;
+            document.getElementById('tow-clicks').textContent = tow.total_clicks || 0;
+            document.getElementById('tow-ctr').textContent = (tow.ctr || 0) + '%';
+            document.getElementById('tow-best-channel').textContent = tow.best_channel || 'N/A';
+            document.getElementById('tow-best-rate').textContent = (tow.best_channel_ctr || 0) + '%';
+        }
+        
+    } catch (error) {
+        console.error('Failed to load algorithm stats:', error);
+    }
+}
+
+// Initial stats refresh
+loadTemplates();
+loadDatabaseStats();
+refreshStats();
+loadAlgorithmStats();
+setInterval(refreshStats, 8080); // Refresh every 5 seconds
+setInterval(loadAlgorithmStats, 10000); // Refresh ML stats every 10 seconds
+setInterval(loadDatabaseStats, 5000); // Refresh database stats every 5 seconds
+
+}); // End DOMContentLoaded
+</script>
+{% endblock %}

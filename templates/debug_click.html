@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click Tracking Debug</title>
+    <style>
+        body { font-family: Arial; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Click Tracking Debug Tool</h1>
+    
+    <div>
+        <label>Log ID: <input type="number" id="logId" value="6" style="width: 100px;"></label>
+        <button onclick="testClickTracking()">Test Click Tracking</button>
+        <button onclick="checkLog()">Check Log Status</button>
+        <button onclick="clearLogs()">Clear</button>
+    </div>
+    
+    <div id="output"></div>
+    
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.className = 'log ' + type;
+            div.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+            output.insertBefore(div, output.firstChild);
+        }
+        
+        function getToken() {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                log('❌ No access token found. Please login first.', 'error');
+                return null;
+            }
+            return token;
+        }
+        
+        async function testClickTracking() {
+            const logId = document.getElementById('logId').value;
+            const token = getToken();
+            if (!token) return;
+            
+            log('🧪 Testing click tracking for log ID: ' + logId);
+            
+            try {
+                const response = await fetch(`/api/v1/logs/${logId}/click`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log(`📡 Response status: ${response.status} ${response.statusText}`);
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`✅ Success! Clicked: ${data.log.clicked}`, 'success');
+                    log(`📊 Log details: ${JSON.stringify(data.log, null, 2)}`);
+                } else {
+                    log(`❌ Failed: ${data.error}`, 'error');
+                }
+            } catch (err) {
+                log(`❌ Error: ${err.message}`, 'error');
+            }
+        }
+        
+        async function checkLog() {
+            const logId = document.getElementById('logId').value;
+            const token = getToken();
+            if (!token) return;
+            
+            log('🔍 Checking log status for ID: ' + logId);
+            
+            try {
+                const response = await fetch(`/api/v1/logs/${logId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`📊 Log found:`, 'success');
+                    log(`  - Status: ${data.log.status}`);
+                    log(`  - Clicked: ${data.log.clicked}`);
+                    log(`  - Content: ${JSON.stringify(data.log.content)}`);
+                    log(`  - Created: ${data.log.created_at}`);
+                    if (data.log.clicked_at) {
+                        log(`  - Clicked at: ${data.log.clicked_at}`, 'success');
+                    }
+                } else {
+                    log(`❌ Failed: ${data.error}`, 'error');
+                }
+            } catch (err) {
+                log(`❌ Error: ${err.message}`, 'error');
+            }
+        }
+        
+        function clearLogs() {
+            document.getElementById('output').innerHTML = '';
+            log('🧹 Logs cleared');
+        }
+        
+        // Auto-check for track_click parameter
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const trackClickId = urlParams.get('track_click');
+            
+            if (trackClickId) {
+                log(`🔔 Found track_click parameter: ${trackClickId}`, 'success');
+                document.getElementById('logId').value = trackClickId;
+                setTimeout(() => testClickTracking(), 500);
+            }
+        });
+        
+        log('✅ Debug tool loaded. Token present: ' + !!localStorage.getItem('access_token'));
+    </script>
+</body>
+</html>

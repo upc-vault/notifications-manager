@@ -1,5 +1,8 @@
-﻿{
-  "public_key": "BLjJcig90rpT0aw78dG_3VJ-aF4pmeSt6VbeVwnv1JNG88hRjkfQjzfOatwKJMNueh_OR3kfZwWX7DJiit5uPtk",
-  "private_key_file": "config/vapid_private.pem",
-  "email": "mailto:admin@yourbank.com"
+{
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgjB7V6e2n5m/MlIYH\nf04yT6o9SuTWfMq+Txlr7can9EOhRANCAAQ5jp9FrBcHdYxvJPMYbYvBz2zT1RBy\ndvAexEQ+yymr8n14azw6ArH10p/H1m9okBB/OMyCkQc3OLP2NmiVcT2s\n-----END PRIVATE KEY-----\n",
+  "public_key": "BDmOn0WsFwd1jG8k8xhti8HPbNPVEHJ28B7ERD7LKavyfXhrPDoCsfXSn8fWb2iQEH84zIKRBzc4s_Y2aJVxPaw",
+  "instructions": {
+    "private_key": "Keep this SECRET! Never expose in client code.",
+    "public_key": "Share this with browsers for subscription. Include in Service Worker."
+  }
 }

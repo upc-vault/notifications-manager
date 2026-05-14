@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block title %}Notification Preferences{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2>
+                <i class="bi bi-sliders"></i> Notification Preferences
+            </h2>
+            <p class="text-muted">Customize how and when you receive notifications</p>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Quiet Hours Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-moon-stars"></i> Quiet Hours (Do Not Disturb)
+                </div>
+                <div class="card-body">
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="quietHoursEnabled">
+                        <label class="form-check-label" for="quietHoursEnabled">
+                            Enable Quiet Hours
+                        </label>
+                    </div>
+                    <div id="quietHoursSettings" style="display:none;">
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label for="quietHoursStart" class="form-label">Start Time</label>
+                                <input type="time" class="form-control" id="quietHoursStart" value="22:00">
+                            </div>
+                            <div class="col-6">
+                                <label for="quietHoursEnd" class="form-label">End Time</label>
+                                <input type="time" class="form-control" id="quietHoursEnd" value="08:00">
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle"></i> During quiet hours, only silent channels (email, web) will be used
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rate Limiting Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <i class="bi bi-speedometer2"></i> Rate Limiting
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="maxPerDay" class="form-label">Max Notifications Per Day</label>
+                        <input type="number" class="form-control" id="maxPerDay" min="1" max="100" value="50">
+                    </div>
+                    <div class="mb-3">
+                        <label for="maxPerHour" class="form-label">Max Notifications Per Hour</label>
+                        <input type="number" class="form-control" id="maxPerHour" min="1" max="20" value="10">
+                    </div>
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle"></i> Limits do not apply to urgent/security notifications
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Channel Preferences -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <i class="bi bi-broadcast"></i> Channel Preferences
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">Select which channels you want to receive notifications on:</p>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="emailEnabled" checked>
+                                <label class="form-check-label" for="emailEnabled">
+                                    <i class="bi bi-envelope"></i> Email
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="smsEnabled" checked>
+                                <label class="form-check-label" for="smsEnabled">
+                                    <i class="bi bi-chat-dots"></i> SMS
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="pushEnabled" checked>
+                                <label class="form-check-label" for="pushEnabled">
+                                    <i class="bi bi-bell"></i> Push
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="whatsappEnabled" checked>
+                                <label class="form-check-label" for="whatsappEnabled">
+                                    <i class="bi bi-whatsapp"></i> WhatsApp
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Preferences -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <i class="bi bi-filter"></i> Content Preferences
+                </div>
+                <div class="card-body">
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="marketingOptIn" checked>
+                        <label class="form-check-label" for="marketingOptIn">
+                            Marketing Communications
+                        </label>
+                    </div>
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="promotionalOptIn" checked>
+                        <label class="form-check-label" for="promotionalOptIn">
+                            Promotional Offers
+                        </label>
+                    </div>
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="preferShort">
+                        <label class="form-check-label" for="preferShort">
+                            Prefer Short Messages
+                        </label>
+                    </div>
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="preferRich" checked>
+                        <label class="form-check-label" for="preferRich">
+                            Enable Rich Content (images, buttons)
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accessibility -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <i class="bi bi-universal-access"></i> Accessibility
+                </div>
+                <div class="card-body">
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="highContrast">
+                        <label class="form-check-label" for="highContrast">
+                            High Contrast Mode
+                        </label>
+                    </div>
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="largeText">
+                        <label class="form-check-label" for="largeText">
+                            Large Text Mode
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Button -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <button id="savePreferences" class="btn btn-primary btn-lg">
+                <i class="bi bi-save"></i> Save Preferences
+            </button>
+        </div>
+    </div>
+
+    <!-- Status Alert -->
+    <div id="statusAlert" class="alert d-none" role="alert"></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle quiet hours settings
+    const quietHoursEnabled = document.getElementById('quietHoursEnabled');
+    const quietHoursSettings = document.getElementById('quietHoursSettings');
+    
+    quietHoursEnabled.addEventListener('change', function() {
+        quietHoursSettings.style.display = this.checked ? 'block' : 'none';
+    });
+    
+    // Load current preferences
+    loadPreferences();
+    
+    // Save preferences
+    document.getElementById('savePreferences').addEventListener('click', savePreferences);
+});
+
+async function loadPreferences() {
+    try {
+        const response = await auth.apiRequest('/api/v1/preferences/', {
+            method: 'GET'
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to load preferences');
+        }
+        
+        const data = await response.json();
+        const prefs = data.preferences;
+        
+        // Quiet Hours
+        document.getElementById('quietHoursEnabled').checked = prefs.quiet_hours_enabled;
+        document.getElementById('quietHoursSettings').style.display = prefs.quiet_hours_enabled ? 'block' : 'none';
+        if (prefs.quiet_hours_start) {
+            document.getElementById('quietHoursStart').value = prefs.quiet_hours_start;
+        }
+        if (prefs.quiet_hours_end) {
+            document.getElementById('quietHoursEnd').value = prefs.quiet_hours_end;
+        }
+        
+        // Rate Limiting
+        document.getElementById('maxPerDay').value = prefs.max_notifications_per_day;
+        document.getElementById('maxPerHour').value = prefs.max_notifications_per_hour;
+        
+        // Channels
+        document.getElementById('emailEnabled').checked = prefs.email_enabled;
+        document.getElementById('smsEnabled').checked = prefs.sms_enabled;
+        document.getElementById('pushEnabled').checked = prefs.push_enabled;
+        document.getElementById('whatsappEnabled').checked = prefs.whatsapp_enabled;
+        
+        // Content
+        document.getElementById('marketingOptIn').checked = prefs.marketing_opt_in;
+        document.getElementById('promotionalOptIn').checked = prefs.promotional_opt_in;
+        document.getElementById('preferShort').checked = prefs.prefer_short_messages;
+        document.getElementById('preferRich').checked = prefs.prefer_rich_content;
+        
+        // Accessibility
+        document.getElementById('highContrast').checked = prefs.high_contrast_mode;
+        document.getElementById('largeText').checked = prefs.large_text_mode;
+        
+    } catch (error) {
+        console.error('Error loading preferences:', error);
+        showAlert('Error loading preferences', 'danger');
+    }
+}
+
+async function savePreferences() {
+    const preferences = {
+        // Quiet Hours
+        quiet_hours_enabled: document.getElementById('quietHoursEnabled').checked,
+        quiet_hours_start: document.getElementById('quietHoursStart').value,
+        quiet_hours_end: document.getElementById('quietHoursEnd').value,
+        
+        // Rate Limiting
+        max_notifications_per_day: parseInt(document.getElementById('maxPerDay').value),
+        max_notifications_per_hour: parseInt(document.getElementById('maxPerHour').value),
+        
+        // Channels
+        email_enabled: document.getElementById('emailEnabled').checked,
+        sms_enabled: document.getElementById('smsEnabled').checked,
+        push_enabled: document.getElementById('pushEnabled').checked,
+        whatsapp_enabled: document.getElementById('whatsappEnabled').checked,
+        
+        // Content
+        marketing_opt_in: document.getElementById('marketingOptIn').checked,
+        promotional_opt_in: document.getElementById('promotionalOptIn').checked,
+        prefer_short_messages: document.getElementById('preferShort').checked,
+        prefer_rich_content: document.getElementById('preferRich').checked,
+        
+        // Accessibility
+        high_contrast_mode: document.getElementById('highContrast').checked,
+        large_text_mode: document.getElementById('largeText').checked
+    };
+    
+    try {
+        const response = await auth.apiRequest('/api/v1/preferences/', {
+            method: 'PUT',
+            body: JSON.stringify(preferences)
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to save preferences');
+        }
+        
+        showAlert('Preferences saved successfully!', 'success');
+    } catch (error) {
+        console.error('Error saving preferences:', error);
+        showAlert('Error saving preferences', 'danger');
+    }
+}
+
+function showAlert(message, type) {
+    const alert = document.getElementById('statusAlert');
+    alert.className = `alert alert-${type}`;
+    alert.textContent = message;
+    alert.classList.remove('d-none');
+    
+    setTimeout(() => {
+        alert.classList.add('d-none');
+    }, 3000);
+}
+</script>
+{% endblock %}

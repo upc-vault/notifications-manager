@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Notification Manager{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="card auth-card">
+        <div class="card-header text-center">
+            <h4 class="mb-0">
+                <i class="bi bi-box-arrow-in-right"></i> Login
+            </h4>
+        </div>
+        <div class="card-body p-4">
+            <form id="login-form">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username or Email</label>
+                    <input type="text" class="form-control" id="username" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" required>
+                </div>
+                
+                <div id="error-message"></div>
+                
+                <button type="submit" class="btn btn-gradient-primary w-100">
+                    <i class="bi bi-box-arrow-in-right"></i> Login
+                </button>
+            </form>
+            
+            <hr>
+            
+            <p class="text-center text-muted mb-0">
+                Don't have an account? <a href="/register">Register here</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const errorDiv = document.getElementById('error-message');
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Logging in...';
+    
+    try {
+        const response = await fetch('/api/v1/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            auth.setTokens(data.access_token, data.refresh_token, data.user);
+            window.location.href = '/dashboard';
+        } else {
+            errorDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-box-arrow-in-right"></i> Login';
+        }
+    } catch (error) {
+        errorDiv.innerHTML = `<div class="alert alert-danger">Login failed. Please try again.</div>`;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-box-arrow-in-right"></i> Login';
+    }
+});
+</script>
+{% endblock %}

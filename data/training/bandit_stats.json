@@ -1,0 +1,190 @@
+{
+  "users": [
+    {
+      "user_id": "user_001",
+      "stats": {
+        "total_selections": 193,
+        "current_epsilon": 0.1140186353151828,
+        "templates": [
+          {
+            "id": "template_urgent",
+            "name": "Urgent Alert",
+            "pulls": 159,
+            "avg_reward": 0.39999999999999986,
+            "is_available": true
+          },
+          {
+            "id": "template_promo",
+            "name": "Promotional",
+            "pulls": 10,
+            "avg_reward": 0.36,
+            "is_available": true
+          },
+          {
+            "id": "template_info",
+            "name": "Informational",
+            "pulls": 10,
+            "avg_reward": 0.25,
+            "is_available": true
+          },
+          {
+            "id": "template_security",
+            "name": "Security Alert",
+            "pulls": 14,
+            "avg_reward": 0.3714285714285714,
+            "is_available": true
+          }
+        ]
+      }
+    },
+    {
+      "user_id": "user_002",
+      "stats": {
+        "total_selections": 223,
+        "current_epsilon": 0.09809983140886998,
+        "templates": [
+          {
+            "id": "template_urgent",
+            "name": "Urgent Alert",
+            "pulls": 197,
+            "avg_reward": 0.15431472081218278,
+            "is_available": true
+          },
+          {
+            "id": "template_promo",
+            "name": "Promotional",
+            "pulls": 0,
+            "avg_reward": 0.0,
+            "is_available": true
+          },
+          {
+            "id": "template_info",
+            "name": "Informational",
+            "pulls": 14,
+            "avg_reward": 0.07142857142857142,
+            "is_available": true
+          },
+          {
+            "id": "template_security",
+            "name": "Security Alert",
+            "pulls": 12,
+            "avg_reward": 0.075,
+            "is_available": true
+          }
+        ]
+      }
+    },
+    {
+      "user_id": "user_003",
+      "stats": {
+        "total_selections": 184,
+        "current_epsilon": 0.11928013224194087,
+        "templates": [
+          {
+            "id": "template_urgent",
+            "name": "Urgent Alert",
+            "pulls": 161,
+            "avg_reward": 0.17453416149068332,
+            "is_available": true
+          },
+          {
+            "id": "template_promo",
+            "name": "Promotional",
+            "pulls": 0,
+            "avg_reward": 0.0,
+            "is_available": true
+          },
+          {
+            "id": "template_info",
+            "name": "Informational",
+            "pulls": 13,
+            "avg_reward": 0.11538461538461539,
+            "is_available": true
+          },
+          {
+            "id": "template_security",
+            "name": "Security Alert",
+            "pulls": 10,
+            "avg_reward": 0.13,
+            "is_available": true
+          }
+        ]
+      }
+    },
+    {
+      "user_id": "user_004",
+      "stats": {
+        "total_selections": 187,
+        "current_epsilon": 0.11749986135821336,
+        "templates": [
+          {
+            "id": "template_urgent",
+            "name": "Urgent Alert",
+            "pulls": 51,
+            "avg_reward": 0.2901960784313726,
+            "is_available": true
+          },
+          {
+            "id": "template_promo",
+            "name": "Promotional",
+            "pulls": 2,
+            "avg_reward": 0.0,
+            "is_available": true
+          },
+          {
+            "id": "template_info",
+            "name": "Informational",
+            "pulls": 16,
+            "avg_reward": 0.26875,
+            "is_available": true
+          },
+          {
+            "id": "template_security",
+            "name": "Security Alert",
+            "pulls": 118,
+            "avg_reward": 0.4237288135593219,
+            "is_available": true
+          }
+        ]
+      }
+    },
+    {
+      "user_id": "user_005",
+      "stats": {
+        "total_selections": 213,
+        "current_epsilon": 0.10314245245272399,
+        "templates": [
+          {
+            "id": "template_urgent",
+            "name": "Urgent Alert",
+            "pulls": 142,
+            "avg_reward": 0.24647887323943668,
+            "is_available": true
+          },
+          {
+            "id": "template_promo",
+            "name": "Promotional",
+            "pulls": 8,
+            "avg_reward": 0.0375,
+            "is_available": true
+          },
+          {
+            "id": "template_info",
+            "name": "Informational",
+            "pulls": 16,
+            "avg_reward": 0.2,
+            "is_available": true
+          },
+          {
+            "id": "template_security",
+            "name": "Security Alert",
+            "pulls": 47,
+            "avg_reward": 0.26382978723404255,
+            "is_available": true
+          }
+        ]
+      }
+    }
+  ],
+  "aggregate_reward": 0.2581
+}

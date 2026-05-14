@@ -1,0 +1,470 @@
+{% extends "base.html" %}
+
+{% block title %}Template Management - Notification Manager{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1><i class="bi bi-file-earmark-text"></i> Notification Templates</h1>
+                    <p class="text-muted mb-0">Manage templates for all notification channels</p>
+                </div>
+                <button class="btn btn-gradient-primary" data-bs-toggle="modal" data-bs-target="#createTemplateModal">
+                    <i class="bi bi-plus-circle"></i> New Template
+                </button>
+            </div>
+
+            <!-- Filters -->
+            <div class="card dashboard-card mb-4">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Channel</label>
+                            <select class="form-select" id="filter-channel">
+                                <option value="">All Channels</option>
+                                <option value="webpush">Web Push</option>
+                                <option value="push">Mobile Push</option>
+                                <option value="email">Email</option>
+                                <option value="sms">SMS</option>
+                                <option value="whatsapp">WhatsApp</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Type</label>
+                            <select class="form-select" id="filter-type">
+                                <option value="">All Types</option>
+                                <option value="informative">Informative</option>
+                                <option value="urgent">Urgent</option>
+                                <option value="promotional">Promotional</option>
+                                <option value="transactional">Transactional</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="filter-active">
+                                <option value="true">Active Only</option>
+                                <option value="false">Inactive Only</option>
+                                <option value="">All</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Templates List -->
+            <div id="templates-list">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create/Edit Template Modal -->
+<div class="modal fade" id="createTemplateModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">
+                    <i class="bi bi-plus-circle"></i> Create Template
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="template-form">
+                    <input type="hidden" id="template-id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Template Name *</label>
+                        <input type="text" class="form-control" id="template-name" required>
+                        <small class="form-text text-muted">Unique identifier for this template</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" id="template-description" rows="2"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Channel *</label>
+                            <select class="form-select" id="template-channel" required>
+                                <option value="">Select Channel</option>
+                                <option value="webpush">Web Push</option>
+                                <option value="push">Mobile Push</option>
+                                <option value="email">Email</option>
+                                <option value="sms">SMS</option>
+                                <option value="whatsapp">WhatsApp</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Type *</label>
+                            <select class="form-select" id="template-type" required>
+                                <option value="">Select Type</option>
+                                <option value="informative">Informative</option>
+                                <option value="urgent">Urgent</option>
+                                <option value="promotional">Promotional</option>
+                                <option value="transactional">Transactional</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Channel-specific fields -->
+                    <div id="content-fields">
+                        <!-- WebPush/Push fields -->
+                        <div class="channel-fields" data-channels="webpush,push">
+                            <div class="mb-3">
+                                <label class="form-label">Title *</label>
+                                <input type="text" class="form-control" id="content-title">
+                                <small class="form-text text-muted">Use {variable_name} for variables</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Body *</label>
+                                <textarea class="form-control" id="content-body" rows="3"></textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Icon URL</label>
+                                    <input type="text" class="form-control" id="content-icon">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Action URL</label>
+                                    <input type="text" class="form-control" id="content-url">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email fields -->
+                        <div class="channel-fields" data-channels="email" style="display:none;">
+                            <div class="mb-3">
+                                <label class="form-label">Subject *</label>
+                                <input type="text" class="form-control" id="email-subject">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Body (HTML) *</label>
+                                <textarea class="form-control" id="email-body" rows="6"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">From Name</label>
+                                <input type="text" class="form-control" id="email-from" value="BBVA Banking">
+                            </div>
+                        </div>
+
+                        <!-- SMS fields -->
+                        <div class="channel-fields" data-channels="sms" style="display:none;">
+                            <div class="mb-3">
+                                <label class="form-label">Message *</label>
+                                <textarea class="form-control" id="sms-message" rows="3" maxlength="160"></textarea>
+                                <small class="form-text text-muted">Max 160 characters</small>
+                            </div>
+                        </div>
+
+                        <!-- WhatsApp fields -->
+                        <div class="channel-fields" data-channels="whatsapp" style="display:none;">
+                            <div class="mb-3">
+                                <label class="form-label">Message *</label>
+                                <textarea class="form-control" id="whatsapp-message" rows="4"></textarea>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="whatsapp-button">
+                                <label class="form-check-label" for="whatsapp-button">
+                                    Include action button
+                                </label>
+                            </div>
+                            <div class="mb-3" id="whatsapp-button-fields" style="display:none;">
+                                <label class="form-label">Button Text</label>
+                                <input type="text" class="form-control" id="whatsapp-button-text">
+                                <label class="form-label mt-2">Button URL</label>
+                                <input type="text" class="form-control" id="whatsapp-button-url">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Variables</label>
+                        <input type="text" class="form-control" id="template-variables" placeholder="e.g., user_name, amount, date">
+                        <small class="form-text text-muted">Comma-separated list of variable names used in this template</small>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="template-active" checked>
+                        <label class="form-check-label" for="template-active">
+                            Active
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-gradient-primary" id="save-template-btn">
+                    <i class="bi bi-save"></i> Save Template
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Check authentication
+document.addEventListener('DOMContentLoaded', function() {
+    if (!auth.requireAuth()) { return; }
+
+let currentTemplates = [];
+
+// Load templates
+async function loadTemplates() {
+    try {
+        const channel = document.getElementById('filter-channel').value;
+        const type = document.getElementById('filter-type').value;
+        const active = document.getElementById('filter-active').value;
+        
+        let url = '/api/v1/templates?';
+        if (channel) url += `channel=${channel}&`;
+        if (type) url += `type=${type}&`;
+        if (active) url += `active=${active}&`;
+        
+        const response = await auth.apiRequest(url);
+        const data = await response.json();
+        
+        currentTemplates = data.templates;
+        displayTemplates(data.templates);
+        
+    } catch (error) {
+        console.error('Error loading templates:', error);
+        document.getElementById('templates-list').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle"></i> Error loading templates: ${error.message}
+            </div>
+        `;
+    }
+}
+
+// Display templates
+function displayTemplates(templates) {
+    const container = document.getElementById('templates-list');
+    
+    if (templates.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                <p class="mt-3">No templates found</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = templates.map(template => `
+        <div class="card dashboard-card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <h5 class="mb-2">
+                            ${template.name}
+                            ${!template.is_active ? '<span class="badge bg-secondary ms-2">Inactive</span>' : ''}
+                        </h5>
+                        <p class="text-muted mb-2">${template.description || 'No description'}</p>
+                        <div class="d-flex gap-2 mb-2">
+                            <span class="badge bg-primary">${template.channel}</span>
+                            <span class="badge bg-info">${template.template_type}</span>
+                            ${template.variables.length > 0 ? `<span class="badge bg-warning text-dark">Variables: ${template.variables.join(', ')}</span>` : ''}
+                        </div>
+                        <small class="text-muted">
+                            Used ${template.times_used} times | 
+                            Created ${new Date(template.created_at).toLocaleDateString()}
+                        </small>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-primary" onclick="editTemplate(${template.id})">
+                            <i class="bi bi-pencil"></i> Edit
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteTemplate(${template.id}, '${template.name}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Show channel-specific fields
+document.getElementById('template-channel').addEventListener('change', (e) => {
+    const channel = e.target.value;
+    document.querySelectorAll('.channel-fields').forEach(section => {
+        const channels = section.dataset.channels.split(',');
+        section.style.display = channels.includes(channel) ? 'block' : 'none';
+    });
+});
+
+// WhatsApp button toggle
+document.getElementById('whatsapp-button').addEventListener('change', (e) => {
+    document.getElementById('whatsapp-button-fields').style.display = e.target.checked ? 'block' : 'none';
+});
+
+// Save template
+document.getElementById('save-template-btn').addEventListener('click', async () => {
+    const templateId = document.getElementById('template-id').value;
+    const channel = document.getElementById('template-channel').value;
+    
+    if (!channel) {
+        alert('Please select a channel');
+        return;
+    }
+    
+    // Build content based on channel
+    let content = {};
+    if (channel === 'webpush' || channel === 'push') {
+        content = {
+            title: document.getElementById('content-title').value,
+            body: document.getElementById('content-body').value,
+            icon: document.getElementById('content-icon').value,
+            url: document.getElementById('content-url').value
+        };
+    } else if (channel === 'email') {
+        content = {
+            subject: document.getElementById('email-subject').value,
+            body: document.getElementById('email-body').value,
+            from: document.getElementById('email-from').value
+        };
+    } else if (channel === 'sms') {
+        content = {
+            message: document.getElementById('sms-message').value
+        };
+    } else if (channel === 'whatsapp') {
+        content = {
+            message: document.getElementById('whatsapp-message').value
+        };
+        if (document.getElementById('whatsapp-button').checked) {
+            content.button = {
+                text: document.getElementById('whatsapp-button-text').value,
+                url: document.getElementById('whatsapp-button-url').value
+            };
+        }
+    }
+    
+    const variables = document.getElementById('template-variables').value
+        .split(',')
+        .map(v => v.trim())
+        .filter(v => v);
+    
+    const data = {
+        name: document.getElementById('template-name').value,
+        description: document.getElementById('template-description').value,
+        channel: channel,
+        template_type: document.getElementById('template-type').value,
+        content: content,
+        variables: variables,
+        is_active: document.getElementById('template-active').checked
+    };
+    
+    try {
+        const method = templateId ? 'PUT' : 'POST';
+        const url = templateId ? `/api/v1/templates/${templateId}` : '/api/v1/templates';
+        
+        const response = await auth.apiRequest(url, {
+            method: method,
+            body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('createTemplateModal')).hide();
+            loadTemplates();
+            auth.showAlert(templateId ? 'Template updated!' : 'Template created!', 'success');
+        } else {
+            const error = await response.json();
+            alert('Error: ' + error.error);
+        }
+    } catch (error) {
+        alert('Error saving template: ' + error.message);
+    }
+});
+
+// Edit template
+async function editTemplate(id) {
+    const template = currentTemplates.find(t => t.id === id);
+    if (!template) return;
+    
+    document.getElementById('modalTitle').innerHTML = '<i class="bi bi-pencil"></i> Edit Template';
+    document.getElementById('template-id').value = template.id;
+    document.getElementById('template-name').value = template.name;
+    document.getElementById('template-description').value = template.description || '';
+    document.getElementById('template-channel').value = template.channel;
+    document.getElementById('template-type').value = template.template_type;
+    document.getElementById('template-variables').value = template.variables.join(', ');
+    document.getElementById('template-active').checked = template.is_active;
+    
+    // Trigger channel change to show correct fields
+    document.getElementById('template-channel').dispatchEvent(new Event('change'));
+    
+    // Populate content fields
+    const content = template.content;
+    if (template.channel === 'webpush' || template.channel === 'push') {
+        document.getElementById('content-title').value = content.title || '';
+        document.getElementById('content-body').value = content.body || '';
+        document.getElementById('content-icon').value = content.icon || '';
+        document.getElementById('content-url').value = content.url || '';
+    } else if (template.channel === 'email') {
+        document.getElementById('email-subject').value = content.subject || '';
+        document.getElementById('email-body').value = content.body || '';
+        document.getElementById('email-from').value = content.from || '';
+    } else if (template.channel === 'sms') {
+        document.getElementById('sms-message').value = content.message || '';
+    } else if (template.channel === 'whatsapp') {
+        document.getElementById('whatsapp-message').value = content.message || '';
+        if (content.button) {
+            document.getElementById('whatsapp-button').checked = true;
+            document.getElementById('whatsapp-button-text').value = content.button.text || '';
+            document.getElementById('whatsapp-button-url').value = content.button.url || '';
+            document.getElementById('whatsapp-button').dispatchEvent(new Event('change'));
+        }
+    }
+    
+    new bootstrap.Modal(document.getElementById('createTemplateModal')).show();
+}
+
+// Delete template
+async function deleteTemplate(id, name) {
+    if (!confirm(`Delete template "${name}"?`)) return;
+    
+    try {
+        const response = await auth.apiRequest(`/api/v1/templates/${id}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            loadTemplates();
+            auth.showAlert('Template deleted', 'success');
+        } else {
+            const error = await response.json();
+            alert('Error: ' + error.error);
+        }
+    } catch (error) {
+        alert('Error deleting template: ' + error.message);
+    }
+}
+
+// Reset modal on close
+document.getElementById('createTemplateModal').addEventListener('hidden.bs.modal', () => {
+    document.getElementById('template-form').reset();
+    document.getElementById('template-id').value = '';
+    document.getElementById('modalTitle').innerHTML = '<i class="bi bi-plus-circle"></i> Create Template';
+});
+
+// Filter listeners
+['filter-channel', 'filter-type', 'filter-active'].forEach(id => {
+    document.getElementById(id).addEventListener('change', loadTemplates);
+});
+
+// Initial load
+loadTemplates();
+
+}); // End DOMContentLoaded
+</script>
+{% endblock %}

@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Intelligent Notification Manager{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <h1 class="animate__animated animate__fadeInDown">
+            <i class="bi bi-robot"></i> Intelligent Notification Manager
+        </h1>
+        <p class="lead mb-4">
+            ML-Powered Multi-Channel Notification System for Banking
+        </p>
+        <p class="mb-4">
+            Using <strong>Sleeping Multi-Armed Bandit</strong> for template selection and 
+            <strong>Tug of War</strong> for optimal channel delivery
+        </p>
+        <div>
+            <a href="/register" class="btn btn-light btn-lg me-2">
+                <i class="bi bi-person-plus"></i> Get Started
+            </a>
+            <a href="/dashboard" class="btn btn-outline-light btn-lg">
+                <i class="bi bi-speedometer2"></i> View Dashboard
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">System Features</h2>
+            <p class="text-muted">Advanced notification management with machine learning</p>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Feature 1 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card feature-card">
+                    <div class="card-body text-center">
+                        <div class="feature-icon primary mx-auto">
+                            <i class="bi bi-cpu"></i>
+                        </div>
+                        <h5 class="card-title">ML-Powered Decisions</h5>
+                        <p class="card-text text-muted">
+                            Sleeping Bandit selects the best template. Tug of War chooses optimal channels based on user behavior.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Feature 2 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card feature-card">
+                    <div class="card-body text-center">
+                        <div class="feature-icon success mx-auto">
+                            <i class="bi bi-broadcast-pin"></i>
+                        </div>
+                        <h5 class="card-title">Multi-Channel Support</h5>
+                        <p class="card-text text-muted">
+                            Web Push, Mobile Push, Email, SMS, and WhatsApp. All channels integrated and ready.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Feature 3 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card feature-card">
+                    <div class="card-body text-center">
+                        <div class="feature-icon warning mx-auto">
+                            <i class="bi bi-lightning-charge"></i>
+                        </div>
+                        <h5 class="card-title">Priority Queue</h5>
+                        <p class="card-text text-muted">
+                            Intelligent priority system ensures critical notifications are delivered first.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Feature 4 -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card feature-card">
+                    <div class="card-body text-center">
+                        <div class="feature-icon info mx-auto">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <h5 class="card-title">Real-Time Analytics</h5>
+                        <p class="card-text text-muted">
+                            Track delivery rates, engagement metrics, and system performance in real-time.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Architecture Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">System Architecture</h2>
+            <p class="text-muted">Complete notification pipeline from decision to delivery</p>
+        </div>
+        
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="card-title mb-4">
+                            <i class="bi bi-diagram-3 text-primary"></i> 
+                            Complete Flow
+                        </h5>
+                        
+                        <div class="d-flex align-items-start mb-3">
+                            <span class="badge bg-primary me-3">1</span>
+                            <div>
+                                <strong>API Request</strong>
+                                <p class="text-muted small mb-0">Notification request received</p>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-start mb-3">
+                            <span class="badge bg-primary me-3">2</span>
+                            <div>
+                                <strong>ML Decision</strong>
+                                <p class="text-muted small mb-0">Sleeping Bandit + Tug of War select template & channel</p>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-start mb-3">
+                            <span class="badge bg-primary me-3">3</span>
+                            <div>
+                                <strong>Priority Queue</strong>
+                                <p class="text-muted small mb-0">Queued by priority score</p>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-start mb-3">
+                            <span class="badge bg-primary me-3">4</span>
+                            <div>
+                                <strong>Queue Publisher</strong>
+                                <p class="text-muted small mb-0">Background service dequeues notifications</p>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-start mb-3">
+                            <span class="badge bg-primary me-3">5</span>
+                            <div>
+                                <strong>Enterprise Service Bus</strong>
+                                <p class="text-muted small mb-0">Routes to appropriate channel provider</p>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-start">
+                            <span class="badge bg-success me-3">6</span>
+                            <div>
+                                <strong>Channel Delivery</strong>
+                                <p class="text-muted small mb-0">Notification delivered to user!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 mt-4 mt-lg-0">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="card-title mb-4">
+                            <i class="bi bi-broadcast text-success"></i> 
+                            Available Channels
+                        </h5>
+                        
+                        <div class="mb-3">
+                            <span class="channel-badge webpush">
+                                <i class="bi bi-browser-chrome"></i> Web Push (Real)
+                            </span>
+                            <small class="text-muted d-block mt-1">
+                                RFC 8030 compliant, VAPID authenticated
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <span class="channel-badge push">
+                                <i class="bi bi-phone"></i> Mobile Push
+                            </span>
+                            <small class="text-muted d-block mt-1">
+                                Firebase & APNs integration
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <span class="channel-badge email">
+                                <i class="bi bi-envelope"></i> Email
+                            </span>
+                            <small class="text-muted d-block mt-1">
+                                Amazon SES integration
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <span class="channel-badge sms">
+                                <i class="bi bi-chat-dots"></i> SMS
+                            </span>
+                            <small class="text-muted d-block mt-1">
+                                Twilio integration
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <span class="channel-badge whatsapp">
+                                <i class="bi bi-whatsapp"></i> WhatsApp
+                            </span>
+                            <small class="text-muted d-block mt-1">
+                                WhatsApp Business API
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4">Ready to Test the System?</h2>
+        <p class="lead text-muted mb-4">
+            Create an account to access the notifications testing dashboard
+        </p>
+        <a href="/register" class="btn btn-gradient-primary btn-lg">
+            <i class="bi bi-rocket-takeoff"></i> Get Started Now
+        </a>
+    </div>
+</section>
+{% endblock %}

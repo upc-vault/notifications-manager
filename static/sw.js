@@ -1,121 +1,173 @@
 // Service Worker for Web Push Notifications
+// Version: 2.0 - Click tracking enabled
+const SW_VERSION = '2.0';
 
-self.addEventListener('install', event => {
-    console.log('Service Worker installed');
-    self.skipWaiting();
+self.addEventListener('install', (event) => {
+    console.log(`Service Worker v${SW_VERSION} installing...`);
+    self.skipWaiting(); // Activate immediately
 });
 
-self.addEventListener('activate', event => {
-    console.log('Service Worker activated');
-    event.waitUntil(clients.claim());
+self.addEventListener('activate', (event) => {
+    console.log(`Service Worker v${SW_VERSION} activated`);
+    event.waitUntil(clients.claim()); // Take control immediately
 });
 
-// Handle push notification
-self.addEventListener('push', event => {
-    console.log('Push notification received:', event);
+self.addEventListener('push', (event) => {
+    console.log('Push event received:', event);
     
     let notificationData = {
-        title: 'Bank Notification',
-        body: 'You have a new notification',
-        icon: '/static/icon.png',
-        badge: '/static/badge.png',
-        tag: 'notification-' + Date.now(),
+        title: 'Notification',
+        body: 'You have a new message',
+        icon: '/static/images/notification-icon.png',
+        badge: '/static/images/badge.png',
+        tag: 'default',
+        requireInteraction: false,
         data: {
-            url: '/',
-            timestamp: new Date().toISOString()
+            url: '/'
         }
     };
-
-    // Parse notification data from push event
+    
+    // Parse notification data if available
     if (event.data) {
         try {
-            const data = event.data.json();
+            const payload = event.data.json();
+            console.log('Notification payload:', payload);
+            
             notificationData = {
-                title: data.title || notificationData.title,
-                body: data.body || notificationData.body,
-                icon: data.icon || notificationData.icon,
-                badge: data.badge || notificationData.badge,
-                tag: data.tag || notificationData.tag,
-                data: data.data || notificationData.data,
-                requireInteraction: data.requireInteraction || false,
-                silent: data.silent || false
+                title: payload.title || notificationData.title,
+                body: payload.body || notificationData.body,
+                icon: payload.icon || notificationData.icon,
+                badge: payload.badge || notificationData.badge,
+                tag: payload.tag || notificationData.tag,
+                requireInteraction: payload.requireInteraction || false,
+                silent: payload.silent || false,
+                data: payload.data || notificationData.data,
+                ...(payload.image && { image: payload.image }),
+                ...(payload.actions && { actions: payload.actions })
             };
         } catch (error) {
-            console.error('Error parsing push data:', error);
+            console.error('Failed to parse notification payload:', error);
         }
     }
-
+    
     // Show notification
-    event.waitUntil(
-        self.registration.showNotification(notificationData.title, {
+    const promiseChain = self.registration.showNotification(
+        notificationData.title,
+        {
             body: notificationData.body,
             icon: notificationData.icon,
             badge: notificationData.badge,
             tag: notificationData.tag,
-            data: notificationData.data,
             requireInteraction: notificationData.requireInteraction,
             silent: notificationData.silent,
-            vibrate: [200, 100, 200]
-        }).then(() => {
-            // Notify any open clients
-            return self.clients.matchAll({ type: 'window' });
-        }).then(clients => {
-            clients.forEach(client => {
-                client.postMessage({
-                    type: 'notification',
-                    notification: {
-                        title: notificationData.title,
-                        body: notificationData.body,
-                        timestamp: notificationData.data.timestamp
-                    }
-                });
-            });
-        })
+            data: notificationData.data,
+            ...(notificationData.image && { image: notificationData.image }),
+            ...(notificationData.actions && { actions: notificationData.actions })
+        }
     );
+    
+    event.waitUntil(promiseChain);
 });
 
-// Handle notification click
-self.addEventListener('notificationclick', event => {
-    console.log('Notification clicked:', event);
-    
-    const notificationId = event.notification.data?.notification_id;
-    const notificationType = event.notification.data?.notification_type;
+self.addEventListener('notificationclick', (event) => {
+    console.log(`[SW v${SW_VERSION}] 🖱️ Notification clicked!`);
+    console.log(`[SW v${SW_VERSION}] 📦 Notification:`, event.notification);
+    console.log(`[SW v${SW_VERSION}] 📦 Notification data:`, event.notification.data);
     
     event.notification.close();
-
+    
+    // Get log_id and URL from notification data
+    const logId = event.notification.data?.log_id;
     const urlToOpen = event.notification.data?.url || '/';
-
-    event.waitUntil(
-        // Send click feedback to API
-        fetch('http://localhost:8080/api/v1/webpush/track-click', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                notification_id: notificationId,
-                clicked: true,
-                timestamp: new Date().toISOString()
-            })
-        }).catch(err => console.error('Failed to send click feedback:', err))
-        .then(() => {
-            // Open or focus window
-            return clients.matchAll({ type: 'window', includeUncontrolled: true });
-        })
-        .then(clientList => {
-            // Check if there's already a window open
-            for (let client of clientList) {
-                if (client.url === urlToOpen && 'focus' in client) {
-                    return client.focus();
-                }
+    
+    console.log(`[SW v${SW_VERSION}] 🔍 Extracted log_id:`, logId);
+    console.log(`[SW v${SW_VERSION}] 🔗 URL to open:`, urlToOpen);
+    
+    // If we have a log_id, append it as a query parameter for tracking
+    let finalUrl = urlToOpen;
+    if (logId) {
+        try {
+            const url = new URL(urlToOpen, self.location.origin);
+            url.searchParams.set('track_click', logId);
+            finalUrl = url.toString();
+            console.log(`[SW v${SW_VERSION}] 📍 Final URL with tracking:`, finalUrl);
+        } catch (err) {
+            console.error(`[SW v${SW_VERSION}] ❌ Error building URL:`, err);
+        }
+    } else {
+        console.warn(`[SW v${SW_VERSION}] ⚠️ No log_id found in notification data!`);
+    }
+    
+    // Open or focus a window with the tracking URL
+    const openPromise = self.clients.matchAll({ 
+        type: 'window', 
+        includeUncontrolled: true 
+    }).then((clientList) => {
+        console.log(`[SW v${SW_VERSION}] 👥 Found ${clientList.length} clients`);
+        
+        // Try to find an existing window to focus
+        for (const client of clientList) {
+            // If we have a log_id, send a message to track it
+            if (logId) {
+                console.log(`[SW v${SW_VERSION}] 📤 Sending TRACK_CLICK message to client:`, client.url);
+                client.postMessage({
+                    type: 'TRACK_CLICK',
+                    logId: logId
+                });
             }
-            // Open new window
-            if (clients.openWindow) {
-                return clients.openWindow(urlToOpen);
+            
+            // Focus the client if it matches
+            if ('focus' in client) {
+                console.log(`[SW v${SW_VERSION}] 🎯 Focusing existing client:`, client.url);
+                return client.focus();
             }
-        })
-    );
+        }
+        
+        // No matching client found, open new window
+        if (self.clients.openWindow) {
+            console.log(`[SW v${SW_VERSION}] 🆕 Opening new window:`, finalUrl);
+            return self.clients.openWindow(finalUrl);
+        }
+    }).catch(err => {
+        console.error(`[SW v${SW_VERSION}] ❌ Error in notification click handler:`, err);
+    });
+    
+    event.waitUntil(openPromise);
 });
 
-// Handle notification close
-self.addEventListener('notificationclose', event => {
-    console.log('Notification closed:', event);
+self.addEventListener('notificationclose', (event) => {
+    console.log('Notification closed:', event.notification);
+    
+    // Optional: Send analytics event
+    // You could track which notifications users close without clicking
+});
+
+// Handle push subscription change (e.g., if subscription expires)
+self.addEventListener('pushsubscriptionchange', (event) => {
+    console.log('Push subscription changed');
+    
+    event.waitUntil(
+        self.registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: event.oldSubscription.options.applicationServerKey
+        })
+        .then((subscription) => {
+            console.log('Re-subscribed:', subscription);
+            
+            // Send new subscription to server
+            return fetch('http://localhost:8080/api/v1/webpush/subscribe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    user_id: 'resubscribe',
+                    subscription: subscription.toJSON()
+                })
+            });
+        })
+        .catch((error) => {
+            console.error('Re-subscription failed:', error);
+        })
+    );
 });
