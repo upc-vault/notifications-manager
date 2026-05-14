@@ -5,9 +5,12 @@ Supports both Android and iOS devices
 import os
 import time
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
+from datetime import datetime
 from src.services.esb import ESBMessage
 from src.providers.channel_providers import ChannelProvider, DeliveryResult
+from src.models.user import db, User
+from src.models.fcm_device_token import FCMDeviceToken
 
 logger = logging.getLogger(__name__)
 
@@ -250,6 +253,178 @@ class PushProvider(ChannelProvider):
                 "failure_count": len(device_tokens),
                 "error": str(e)
             }
+    
+    def register_device_token(self, username: str, device_token: str, platform: str, 
+                             device_info: str = None, app_version: str = None) -> bool:
+        """
+        Register FCM device token for a user
+        
+        Args:
+            username: Username or email
+            device_token: FCM device token
+            platform: 'android' or 'ios'
+            device_info: Device model, OS version, etc.
+            app_version: App version string
+        
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            # Find user
+            user = User.query.filter(
+                (User.username == username) | (User.email == username)
+            ).first()
+            
+            if not user:
+                logger.error(f"❌ User not found: {username}")
+                return False
+            
+            # Validate platform
+            if platform.lower() not in ['android', 'ios']:
+                logger.error(f"❌ Invalid platform: {platform}")
+                return False
+            
+            # Check if token already exists
+            existing_token = FCMDeviceToken.query.filter_by(
+                device_token=device_token
+            ).first()
+            
+            if existing_token:
+                # Update existing token
+                existing_token.user_id = user.id
+                existing_token.platform = platform.lower()
+                existing_token.device_info = device_info
+                existing_token.app_version = app_version
+                existing_token.is_active = True
+                existing_token.updated_at = datetime.utcnow()
+                logger.info(f"✓ Updated FCM token for user {username} ({platform})")
+            else:
+                # Create new token
+                token = FCMDeviceToken(
+                    user_id=user.id,
+                    device_token=device_token,
+                    platform=platform.lower(),
+                    device_info=device_info,
+                    app_version=app_version
+                )
+                db.session.add(token)
+                logger.info(f"✓ Registered new FCM token for user {username} ({platform})")
+            
+            db.session.commit()
+            return True
+            
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"❌ Failed to register FCM token: {e}")
+            return False
+    
+    def unregister_device_token(self, username: str, device_token: str = None) -> bool:
+        """
+        Unregister FCM device token(s) for a user
+        
+        Args:
+            username: Username or email
+            device_token: Specific token to remove (if None, removes all user's tokens)
+        
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            # Find user
+            user = User.query.filter(
+                (User.username == username) | (User.email == username)
+            ).first()
+            
+            if not user:
+                logger.error(f"❌ User not found: {username}")
+                return False
+            
+            if device_token:
+                # Remove specific token
+                token = FCMDeviceToken.query.filter_by(
+                    user_id=user.id,
+                    device_token=device_token
+                ).first()
+                
+                if token:
+                    token.deactivate()
+                    db.session.commit()
+                    logger.info(f"✓ Deactivated FCM token for user {username}")
+                    return True
+                else:
+                    logger.warning(f"⚠️  FCM token not found for user {username}")
+                    return False
+            else:
+                # Deactivate all user's tokens
+                tokens = FCMDeviceToken.query.filter_by(
+                    user_id=user.id,
+                    is_active=True
+                ).all()
+                
+                for token in tokens:
+                    token.deactivate()
+                
+                db.session.commit()
+                logger.info(f"✓ Deactivated {len(tokens)} FCM token(s) for user {username}")
+                return True
+            
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"❌ Failed to unregister FCM token: {e}")
+            return False
+    
+    def get_user_tokens(self, username: str, active_only: bool = True) -> List[FCMDeviceToken]:
+        """
+        Get all FCM device tokens for a user
+        
+        Args:
+            username: Username or email
+            active_only: Only return active tokens
+        
+        Returns:
+            List of FCMDeviceToken objects
+        """
+        try:
+            # Find user
+            user = User.query.filter(
+                (User.username == username) | (User.email == username)
+            ).first()
+            
+            if not user:
+                return []
+            
+            query = FCMDeviceToken.query.filter_by(user_id=user.id)
+            
+            if active_only:
+                query = query.filter_by(is_active=True)
+            
+            return query.all()
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to get user tokens: {e}")
+            return []
+    
+    def get_all_tokens(self, active_only: bool = True) -> List[FCMDeviceToken]:
+        """
+        Get all FCM device tokens in the system
+        
+        Args:
+            active_only: Only return active tokens
+        
+        Returns:
+            List of FCMDeviceToken objects
+        """
+        try:
+            query = FCMDeviceToken.query
+            
+            if active_only:
+                query = query.filter_by(is_active=True)
+            
+            return query.all()
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to get all tokens: {e}")
+            return []
 
 
 # Create singleton instance

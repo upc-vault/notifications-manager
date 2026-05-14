@@ -22,8 +22,11 @@ from src.models.user_profile import UserProfile, UserPreferences, BankingTier
 from src.models.user import db, bcrypt, User
 from src.models.notification_template import NotificationTemplate
 from src.models.notification_log import NotificationLog
+from src.models.fcm_device_token import FCMDeviceToken
+from src.models.transfer import Transfer
 from src.services.auth_service import auth_service
 from src.services.notification_decision_service import decision_service
+from src.services.transfer_service import transfer_service
 from src.services.priority_queue_service import priority_queue, QueuedNotification
 from src.utils.redis_client import redis_client
 from src.services.esb import esb
@@ -837,6 +840,253 @@ def webpush_subscriptions():
             ],
             "timestamp": time.time()
         }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route(f'{API_PREFIX}/push/register', methods=['POST'])
+@jwt_required()
+def push_register():
+    """
+    Register FCM device token for push notifications (requires authentication)
+    
+    Request body:
+    {
+        "device_token": "fcm_token_string",
+        "platform": "android",  // or "ios"
+        "device_info": "Samsung Galaxy S23, Android 13",  // optional
+        "app_version": "1.0.5"  // optional
+    }
+    """
+    try:
+        current_username = get_jwt_identity()
+        data = request.get_json()
+        
+        if not data or 'device_token' not in data:
+            return jsonify({
+                "error": "Missing required field: device_token"
+            }), 400
+        
+        if 'platform' not in data:
+            return jsonify({
+                "error": "Missing required field: platform (android or ios)"
+            }), 400
+        
+        device_token = data['device_token']
+        platform = data['platform']
+        device_info = data.get('device_info')
+        app_version = data.get('app_version')
+        
+        # Register device token
+        success = providers['push'].register_device_token(
+            username=current_username,
+            device_token=device_token,
+            platform=platform,
+            device_info=device_info,
+            app_version=app_version
+        )
+        
+        if success:
+            return jsonify({
+                "status": "registered",
+                "message": f"FCM device token registered for user {current_username}",
+                "username": current_username,
+                "platform": platform
+            }), 200
+        else:
+            return jsonify({
+                "error": "Failed to register device token"
+            }), 500
+            
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route(f'{API_PREFIX}/push/unregister', methods=['POST'])
+@jwt_required()
+def push_unregister():
+    """
+    Unregister FCM device token (requires authentication)
+    
+    Request body (optional):
+    {
+        "device_token": "fcm_token_string"  // If omitted, deactivates all user's tokens
+    }
+    """
+    try:
+        current_username = get_jwt_identity()
+        data = request.get_json() or {}
+        device_token = data.get('device_token')
+        
+        # Unregister device token
+        success = providers['push'].unregister_device_token(
+            username=current_username,
+            device_token=device_token
+        )
+        
+        if success:
+            return jsonify({
+                "status": "unregistered",
+                "message": f"FCM device token(s) removed for user {current_username}",
+                "username": current_username
+            }), 200
+        else:
+            return jsonify({
+                "error": "Token not found"
+            }), 404
+            
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route(f'{API_PREFIX}/push/tokens', methods=['GET'])
+@jwt_required()
+def push_get_tokens():
+    """Get all FCM device tokens for authenticated user"""
+    try:
+        current_username = get_jwt_identity()
+        
+        tokens = providers['push'].get_user_tokens(current_username)
+        
+        return jsonify({
+            "total_tokens": len(tokens),
+            "tokens": [token.to_dict() for token in tokens],
+            "timestamp": time.time()
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route(f'{API_PREFIX}/push/tokens/all', methods=['GET'])
+def push_get_all_tokens():
+    """Get all active FCM device tokens in the system (admin endpoint)"""
+    try:
+        tokens = providers['push'].get_all_tokens()
+        
+        return jsonify({
+            "total_tokens": len(tokens),
+            "tokens": [token.to_dict() for token in tokens],
+            "timestamp": time.time()
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route(f'{API_PREFIX}/transfers', methods=['POST'])
+@jwt_required()
+def create_transfer():
+    """
+    Create a money transfer (requires authentication)
+    
+    Request body:
+    {
+        "receiver_username": "john_doe",
+        "amount": 50.00,
+        "description": "Lunch payment"
+    }
+    """
+    try:
+        current_username = get_jwt_identity()
+        data = request.get_json()
+        
+        if not data or 'receiver_username' not in data or 'amount' not in data:
+            return jsonify({
+                "error": "Missing required fields: receiver_username, amount"
+            }), 400
+        
+        receiver_username = data['receiver_username']
+        amount = float(data['amount'])
+        description = data.get('description')
+        
+        # Create transfer
+        transfer, error = transfer_service.create_transfer(
+            sender_username=current_username,
+            receiver_username=receiver_username,
+            amount=amount,
+            description=description
+        )
+        
+        if error:
+            return jsonify({"error": error}), 400
+        
+        # Process transfer immediately and send notification
+        success, error = transfer_service.process_transfer(transfer.id, send_notification=True)
+        
+        if not success:
+            return jsonify({"error": error}), 500
+        
+        return jsonify({
+            "success": True,
+            "message": "Transfer completed successfully",
+            "transfer": transfer.to_dict()
+        }), 201
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route(f'{API_PREFIX}/transfers', methods=['GET'])
+@jwt_required()
+def get_transfers():
+    """
+    Get transfers for authenticated user
+    
+    Query params:
+    - type: 'sent', 'received', or 'all' (default: 'all')
+    - limit: max results (default: 50)
+    - offset: pagination offset (default: 0)
+    """
+    try:
+        current_username = get_jwt_identity()
+        
+        transfer_type = request.args.get('type', 'all')
+        limit = int(request.args.get('limit', 50))
+        offset = int(request.args.get('offset', 0))
+        
+        transfers, total = transfer_service.get_user_transfers(
+            username=current_username,
+            transfer_type=transfer_type,
+            limit=limit,
+            offset=offset
+        )
+        
+        return jsonify({
+            "success": True,
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+            "transfers": [t.to_dict() for t in transfers]
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route(f'{API_PREFIX}/transfers/<int:transfer_id>', methods=['GET'])
+@jwt_required()
+def get_transfer_detail(transfer_id):
+    """Get transfer details by ID"""
+    try:
+        current_username = get_jwt_identity()
+        
+        transfer = transfer_service.get_transfer(transfer_id)
+        
+        if not transfer:
+            return jsonify({"error": "Transfer not found"}), 404
+        
+        # Verify user has access to this transfer
+        current_user = User.query.filter(
+            (User.username == current_username) | (User.email == current_username)
+        ).first()
+        
+        if transfer.sender_id != current_user.id and transfer.receiver_id != current_user.id:
+            return jsonify({"error": "Access denied"}), 403
+        
+        return jsonify({
+            "success": True,
+            "transfer": transfer.to_dict()
+        }), 200
+        
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

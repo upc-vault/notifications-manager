@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Omega Bank</string>
+    <string name="default_notification_channel_id">omega_transfers_channel</string>
+    
+    <!-- Login -->
+    <string name="login_title">Welcome Back</string>
+    <string name="login_subtitle">Sign in to continue</string>
+    <string name="username_hint">Username or Email</string>
+    <string name="password_hint">Password</string>
+    <string name="login_button">Login</string>
+    <string name="register_link">Don\'t have an account? Register</string>
+    
+    <!-- Register -->
+    <string name="register_title">Create Account</string>
+    <string name="register_subtitle">Join Omega Bank today</string>
+    <string name="fullname_hint">Full Name</string>
+    <string name="email_hint">Email</string>
+    <string name="register_button">Register</string>
+    <string name="login_link">Already have an account? Login</string>
+    
+    <!-- Main -->
+    <string name="balance_label">Available Balance</string>
+    <string name="send_money">Send Money</string>
+    <string name="transactions">Transactions</string>
+    <string name="logout">Logout</string>
+    
+    <!-- Transfer -->
+    <string name="transfer_title">Send Money</string>
+    <string name="recipient_hint">Recipient Username</string>
+    <string name="amount_hint">Amount</string>
+    <string name="description_hint">Description (optional)</string>
+    <string name="send_button">Send</string>
+    <string name="transfer_success">Transfer successful!</string>
+    <string name="transfer_error">Transfer failed</string>
+    
+    <!-- Transactions -->
+    <string name="sent_label">Sent</string>
+    <string name="received_label">Received</string>
+    <string name="no_transactions">No transactions yet</string>
+    
+    <!-- Errors -->
+    <string name="error_network">Network error. Please try again.</string>
+    <string name="error_invalid_credentials">Invalid username or password</string>
+    <string name="error_required_fields">Please fill all required fields</string>
+</resources>
